@@ -176,7 +176,7 @@ public class BranchService {
 		}
 
 		String password = PasswordManager.getPasswordSaltString();
-		BranchDAO.insertUser(branchId, WINConstants.BRANCHROLEID, userId, password, branchEmailId, conn);
+		BranchDAO.insertUser(branchId, WINConstants.BRANCH, userId, password, branchEmailId, conn);
 		String emailBody = EmailTemplate.getUserEmailBody(branchId, password);
 		int emailStatus = new SendMailService().sendMail(branchEmailId, "Created Successfully ", "", emailBody, "");
 		log.info("EMAIL STATUS : " + emailStatus);

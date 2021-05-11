@@ -49,13 +49,14 @@ public class AgentDAO {
 	public String approveAgent(AgentDTO agentDTO, String userId, Connection conn) {
 		String currentDate = new DateUtils().getCurrnetDate();
 		PreparedStatement ps = null;
-		String sql = "UPDATE agent_info set status=?, modified_by=?, modified_on= ? where agent_id = ?";
+		String sql = "UPDATE agent_info set status=?, modified_by=?, modified_on= ?, remark=? where agent_id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, WINConstants.APPROVE);
 			ps.setString(2, userId);
 			ps.setString(3, currentDate);
-			ps.setString(4, agentDTO.getAgentId());
+			ps.setString(4, WINConstants.NEWAPP);
+			ps.setString(5, agentDTO.getAgentId());
 			if (ps.executeUpdate() > 0) {
 				log.info("Agent Approve Successfully.");
 				return "1";
@@ -75,13 +76,14 @@ public class AgentDAO {
 	public String rejectAgent(AgentDTO agentDTO, String userId, Connection conn) {
 		String currentDate = new DateUtils().getCurrnetDate();
 		PreparedStatement ps = null;
-		String sql = "UPDATE agent_info set status=?, modified_by=?, modified_on= ? where agent_id = ?";
+		String sql = "UPDATE agent_info set status=?, modified_by=?, modified_on= ?, remark=? where agent_id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, WINConstants.REJECT);
 			ps.setString(2, userId);
 			ps.setString(3, currentDate);
-			ps.setString(4, agentDTO.getAgentId());
+			ps.setString(4, agentDTO.getRemark());
+			ps.setString(5, agentDTO.getAgentId());
 			if (ps.executeUpdate() > 0) {
 				log.info("agent rejected successfully.");
 				return "1";
@@ -122,6 +124,7 @@ public class AgentDAO {
 				agentDTO.setEmailId(rs.getString("email_id"));
 				agentDTO.setContactNumber(rs.getString("contact_number"));
 				agentDTO.setStatus(rs.getString("status"));
+				agentDTO.setRemark(rs.getString("remark"));
 				agentDTO.setCreatedBy(rs.getString("created_by"));
 				agentDTO.setCreatedOn(rs.getString("created_on"));
 				lst.add(agentDTO);
@@ -141,13 +144,14 @@ public class AgentDAO {
 	public String deleteAgent(AgentDTO agentDTO, String userId, Connection conn) {
 		String currentDate = new DateUtils().getCurrnetDate();
 		PreparedStatement ps = null;
-		String sql = "UPDATE agent_info set status=?, modified_by=?, modified_on= ? where agent_id = ?";
+		String sql = "UPDATE agent_info set status=?, modified_by=?, modified_on= ?, remark=? where agent_id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, WINConstants.DELETE);
 			ps.setString(2, userId);
 			ps.setString(3, currentDate);
-			ps.setString(4, agentDTO.getAgentId());
+			ps.setString(4, WINConstants.DELAPP);
+			ps.setString(5, agentDTO.getAgentId());
 			if (ps.executeUpdate() > 0) {
 				log.info("agent updated successfully.");
 				return "1";
@@ -182,6 +186,7 @@ public class AgentDAO {
 				agentDTO.setEmailId(rs.getString("email_id"));
 				agentDTO.setContactNumber(rs.getString("contact_number"));
 				agentDTO.setStatus(rs.getString("status"));
+				agentDTO.setRemark(rs.getString("remark"));
 				agentDTO.setCreatedBy(rs.getString("created_by"));
 				agentDTO.setCreatedOn(rs.getString("created_on"));
 			}
@@ -201,7 +206,7 @@ public class AgentDAO {
 	public String updateAgent(AgentDTO agentDTO, String userId, Connection conn) {
 		String currentDate = new DateUtils().getCurrnetDate();
 		PreparedStatement ps = null;
-		String sql = "UPDATE agent_info set agent_name=?, contact_person_name=?, email_id=?, contact_number=?, modified_by=?, modified_on= ? where agent_id = ?";
+		String sql = "UPDATE agent_info set agent_name=?, contact_person_name=?, email_id=?, contact_number=?, modified_by=?, modified_on= ?, status=?, remark=? where agent_id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, agentDTO.getAgentName());
@@ -210,7 +215,9 @@ public class AgentDAO {
 			ps.setString(4, agentDTO.getContactNumber());
 			ps.setString(5, userId);
 			ps.setString(6, currentDate);
-			ps.setString(7, agentDTO.getAgentId());
+			ps.setString(7, WINConstants.APPROVE);
+			ps.setString(8, WINConstants.UPAPP);
+			ps.setString(9, agentDTO.getAgentId());
 			if (ps.executeUpdate() > 0) {
 				log.info("agent updated successfully.");
 				return "1";

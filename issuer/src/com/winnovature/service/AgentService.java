@@ -90,7 +90,7 @@ public class AgentService {
 		}
 		agentDTO = agentDAO.getAgentById(agentDTO.getAgentId(), conn);
 		String password = PasswordManager.getPasswordSaltString();
-		CustomerDAO.insertUser(agentDTO.getAgentId(),WINConstants.AGENTROLEID,userId,password,agentDTO.getEmailId(),conn);
+		CustomerDAO.insertUser(agentDTO.getAgentId(),WINConstants.AGENT,userId,password,agentDTO.getEmailId(),conn);
 		String emailBody = EmailTemplate.getUserEmailBody(agentDTO.getAgentId(), password);
 		int emailStatus = new SendMailService().sendMail(agentDTO.getEmailId(),"Created Successfully ", "", emailBody, "");
 		log.info("EMAIL STATUS :: "+emailStatus);

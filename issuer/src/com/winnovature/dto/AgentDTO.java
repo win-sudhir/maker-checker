@@ -17,6 +17,7 @@ public class AgentDTO {
 	private String modifiedOn;
 	private String rejectReason;
 	private String statusMessage;
+	private String remark;
 	
 	
 	public String getBankAgentId() {
@@ -114,6 +115,12 @@ public class AgentDTO {
 	}
 	public void setStatusMessage(String statusMessage) {
 		this.statusMessage = statusMessage;
+	}
+	public String getRemark() {
+		return remark;
+	}
+	public void setRemark(String remark) {
+		this.remark = remark;
 	}
 	
 }

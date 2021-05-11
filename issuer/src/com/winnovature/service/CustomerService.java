@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.winnovature.constants.IDGenerator;
+import com.winnovature.constants.WINConstants;
 import com.winnovature.dao.AccountDAO;
 import com.winnovature.dao.AddressDAO;
 import com.winnovature.dao.CustomerDAO;
@@ -52,7 +53,7 @@ public class CustomerService {
 		VehicleDAO.addVehicle(conn, vehicleDTO, customerId);
 		//Email//////////////////////////////////////
 		String password = PasswordManager.getPasswordSaltString();
-		CustomerDAO.insertUser(customerId, "2",userId,password,customerDTO.getEmailId(),conn);
+		CustomerDAO.insertUser(customerId, WINConstants.CUSTOMER,userId,password,customerDTO.getEmailId(),conn);
 		String emailBody = EmailTemplate.getEmailBody(customerId, password);
 		int emailStatus = new SendMailService().sendMail(customerDTO.getEmailId(),"Created Successfully ", "", emailBody, "");
 		log.info("EMAIL STATUS : "+emailStatus);

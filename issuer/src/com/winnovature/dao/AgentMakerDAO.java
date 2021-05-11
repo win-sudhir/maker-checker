@@ -21,7 +21,7 @@ public class AgentMakerDAO {
 		String currentDate = new DateUtils().getCurrnetDate();
 		try {
 
-			String query = "INSERT INTO agent_info (agent_id, bank_agent_id, branch_id, agent_name, contact_person_name, email_id, contact_number, status, created_by, created_on, status_message) "
+			String query = "INSERT INTO agent_info (agent_id, bank_agent_id, branch_id, agent_name, contact_person_name, email_id, contact_number, status, created_by, created_on, remark) "
 					+ "VALUES (?,?,?,?,?,?,?,?,?,?,?) ";
 
 			ps = conn.prepareStatement(query);
@@ -52,7 +52,7 @@ public class AgentMakerDAO {
 	public String approveAgent(AgentDTO agentDTO, String userId, Connection conn) {
 		String currentDate = new DateUtils().getCurrnetDate();
 		PreparedStatement ps = null;
-		String sql = "UPDATE agent_info set status=?, modified_by=?, modified_on= ?, status_message=? where agent_id = ?";
+		String sql = "UPDATE agent_info set status=?, modified_by=?, modified_on= ?, remark=? where agent_id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, WINConstants.ACTPENDING);
@@ -128,6 +128,7 @@ public class AgentMakerDAO {
 				agentDTO.setEmailId(rs.getString("email_id"));
 				agentDTO.setContactNumber(rs.getString("contact_number"));
 				agentDTO.setStatus(rs.getString("status"));
+				agentDTO.setRemark(rs.getString("remark"));
 				agentDTO.setCreatedBy(rs.getString("created_by"));
 				agentDTO.setCreatedOn(rs.getString("created_on"));
 				agentDTO.setStatusMessage(rs.getString("status_message"));
@@ -149,7 +150,7 @@ public class AgentMakerDAO {
 	public String deleteAgent(AgentDTO agentDTO, String userId, Connection conn) {
 		String currentDate = new DateUtils().getCurrnetDate();
 		PreparedStatement ps = null;
-		String sql = "UPDATE agent_info set status=?, modified_by=?, modified_on= ?, status_message=? where agent_id = ?";
+		String sql = "UPDATE agent_info set status=?, modified_by=?, modified_on= ?, remark=? where agent_id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, WINConstants.DELPENDING);
@@ -191,6 +192,7 @@ public class AgentMakerDAO {
 				agentDTO.setEmailId(rs.getString("email_id"));
 				agentDTO.setContactNumber(rs.getString("contact_number"));
 				agentDTO.setStatus(rs.getString("status"));
+				agentDTO.setRemark(rs.getString("remark"));
 				agentDTO.setCreatedBy(rs.getString("created_by"));
 				agentDTO.setCreatedOn(rs.getString("created_on"));
 			}
@@ -210,14 +212,14 @@ public class AgentMakerDAO {
 	public String updateAgent(AgentDTO agentDTO, String userId, Connection conn) {
 		String currentDate = new DateUtils().getCurrnetDate();
 		PreparedStatement ps = null;
-		String sql = "UPDATE agent_info set status=?, modified_by=?, modified_on= ?, status_message=? where agent_id = ?";
+		String sql = "UPDATE agent_info set status=?, modified_by=?, modified_on= ?, remark=? where agent_id = ?";
 		try {
 			addEditedAgent(agentDTO, conn);
 			ps = conn.prepareStatement(sql);
-			ps.setString(1, WINConstants.DELPENDING);
+			ps.setString(1, WINConstants.UPPENDING);
 			ps.setString(2, userId);
 			ps.setString(3, currentDate);
-			ps.setString(4, WINConstants.DELREQ);
+			ps.setString(4, WINConstants.UPREQ);
 			ps.setString(5, agentDTO.getAgentId());
 			if (ps.executeUpdate() > 0) {
 				log.info("agent updated successfully.");

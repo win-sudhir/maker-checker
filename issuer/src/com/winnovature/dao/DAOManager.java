@@ -1573,8 +1573,8 @@ public class DAOManager {
 
 			preparedStmt2.executeUpdate();
 
-			String role_id = "158";
-			WinnovatureService.insertUser(supplierId, role_id, createdBy, password, emailId);
+			String roleId = WINConstants.SUPPLIER;
+			WinnovatureService.insertUser(supplierId, roleId, createdBy, password, emailId);
 			log.info("supplier user inserted successfully.........");
 
 			isadded = "1";
