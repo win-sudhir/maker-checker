@@ -1507,8 +1507,8 @@ public class DAOManager {
 		PreparedStatement preparedStmt2 = null;
 
 		ResultSet rs = null;
-		String sql = "insert into supplier_master (supplier_id, supplier_name, email_id, contact_person, contact_number1, contact_number2, web_site, delivery_period, max_order_qty,min_order_qty,is_npci_certified,npci_certification_expiry,gstn,created_by,created_on,approved_by,approved_on,status,is_deleted,is_approved)"
-				+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "insert into supplier_master (supplier_id, supplier_name, email_id, contact_person, contact_number1, contact_number2, web_site, delivery_period, max_order_qty,min_order_qty,is_npci_certified,npci_certification_expiry,gstn,created_by,created_on,approved_by,approved_on,status,is_deleted,is_approved, remark)"
+				+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		String sql1 = "insert into address_info  (user_id, resi_address1, resi_address2, resi_pin, resi_city, resi_state, business_add1, business_add2, business_pin, business_city, business_state)"
 				+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		String sql2 = "insert into account_info  (user_id, account_number, bank_name, branch_address, ifsc_code, account_type, created_on, status)"
@@ -1537,9 +1537,10 @@ public class DAOManager {
 			preparedStmt.setString(16, "");
 			preparedStmt.setTimestamp(17, new Timestamp(System.currentTimeMillis()));
 
-			preparedStmt.setString(18, status);
+			preparedStmt.setString(18, WINConstants.NEW);
 			preparedStmt.setString(19, "0");
 			preparedStmt.setString(20, "0");
+			preparedStmt.setString(21, WINConstants.NEWREQ);
 
 			preparedStmt.executeUpdate();
 
