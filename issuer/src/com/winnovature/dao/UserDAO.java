@@ -21,8 +21,8 @@ public class UserDAO {
 
 		try {
 						
-			String query = "INSERT INTO user_info (user_id, user_name, email_id, contact_number, status, created_by, created_on) "
-					+ "VALUES (?,?,?,?,?,?,?) ";
+			String query = "INSERT INTO user_info (user_id, user_name, email_id, contact_number, status, created_by, created_on, remark) "
+					+ "VALUES (?,?,?,?,?,?,?,?) ";
 
 			ps = conn.prepareStatement(query);
 			ps.setString(1, userDTO.getUserId());
@@ -32,6 +32,7 @@ public class UserDAO {
 			ps.setString(5, WINConstants.NEW);
 			ps.setString(6, userId);
 			ps.setString(7, new DateUtils().getCurrnetDate());
+			ps.setString(8, WINConstants.NEWREQ);
 			
 			if(ps.executeUpdate()>0) {
 				log.info("User created successfully.");
