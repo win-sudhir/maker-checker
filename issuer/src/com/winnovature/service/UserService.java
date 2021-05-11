@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.winnovature.constants.IDGenerator;
-import com.winnovature.constants.WINConstants;
 import com.winnovature.dao.AddressDAO;
 import com.winnovature.dao.CustomerDAO;
 import com.winnovature.dao.UserDAO;
@@ -69,14 +68,16 @@ public class UserService {
 			responseDTO.setErrorCode(UserErrorCode.WINNUBU005.name());
 			return responseDTO;
 		}
-		String roleId = null;
+		/*roleId = null;
 		if(userDTO.getUserId().startsWith("UM")) {
 			roleId = WINConstants.MAKERROLEID;//"10";
 		}
 		if(userDTO.getUserId().startsWith("UC")) {
 			roleId = WINConstants.CHECKERROLEID;//"11";
-		}
+		}*/
+		 //UserDAO.getRoleId(userDTO.getUserId(), conn);
 		userDTO = userDAO.getUserById(userDTO.getUserId(), conn);
+		String roleId = userDTO.getRoleId();
 		String password = PasswordManager.getPasswordSaltString();
 		CustomerDAO.insertUser(userDTO.getUserId(),roleId,userId,password,userDTO.getEmailId(),conn);
 		String emailBody = EmailTemplate.getUserEmailBody(userDTO.getUserId(), password);
@@ -111,6 +112,7 @@ public class UserService {
 			responseDTO.setErrorCode(UserErrorCode.WINNUBU003.name());
 			return responseDTO;
 		}
+		userDAO.deleteUserFromUserMaster(userDTO.getUserId(), conn);
 		responseDTO.setStatus(ResponseDTO.success);
 		responseDTO.setMessage(UserErrorCode.WINNUBU006.getErrorMessage());
 		responseDTO.setErrorCode(UserErrorCode.WINNUBU006.name());
@@ -142,6 +144,7 @@ public class UserService {
 			responseDTO.setErrorCode(UserErrorCode.WINNUBU009.name());
 			return responseDTO;
 		}
+		addressDTO.setUserId(userDTO.getUserId());
 		UserDAO.updateAddress(conn, addressDTO, userId);
 		responseDTO.setStatus(ResponseDTO.success);
 		responseDTO.setMessage(UserErrorCode.WINNUBU0010.getErrorMessage());

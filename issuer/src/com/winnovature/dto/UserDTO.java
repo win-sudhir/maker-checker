@@ -10,6 +10,7 @@ public class UserDTO {
 	private String createdBy;
 	private String createdOn;
 	private String userType;
+	private String remark;
 	public String getUserId() {
 		return userId;
 	}
@@ -64,4 +65,11 @@ public class UserDTO {
 	public void setUserType(String userType) {
 		this.userType = userType;
 	}
+	public String getRemark() {
+		return remark;
+	}
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+	
 }

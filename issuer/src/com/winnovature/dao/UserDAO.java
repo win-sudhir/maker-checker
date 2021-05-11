@@ -21,8 +21,8 @@ public class UserDAO {
 
 		try {
 						
-			String query = "INSERT INTO user_info (user_id, user_name, email_id, contact_number, status, created_by, created_on, remark) "
-					+ "VALUES (?,?,?,?,?,?,?,?) ";
+			String query = "INSERT INTO user_info (user_id, user_name, email_id, contact_number, status, created_by, created_on, remark, role_id) "
+					+ "VALUES (?,?,?,?,?,?,?,?,?) ";
 
 			ps = conn.prepareStatement(query);
 			ps.setString(1, userDTO.getUserId());
@@ -33,6 +33,7 @@ public class UserDAO {
 			ps.setString(6, userId);
 			ps.setString(7, new DateUtils().getCurrnetDate());
 			ps.setString(8, WINConstants.NEWREQ);
+			ps.setString(9, userDTO.getRoleId());
 			
 			if(ps.executeUpdate()>0) {
 				log.info("User created successfully.");
@@ -81,13 +82,14 @@ public class UserDAO {
 	public String rejectUser(UserDTO userDTO, String userId, Connection conn) {
 		String currentDate = new DateUtils().getCurrnetDate();
         PreparedStatement ps = null;
-        String sql = "UPDATE user_info set status = ?, modified_by = ?, modified_on = ? where user_id = ?";
+        String sql = "UPDATE user_info set status = ?, modified_by = ?, modified_on = ?, remark=? where user_id = ?";
         try {
             ps = conn.prepareStatement(sql);
-            ps.setString(1, WINConstants.REJECT);
+            ps.setString(1, WINConstants.REJECT);//REJPENDING
             ps.setString(2, userId);
             ps.setString(3, currentDate);
-            ps.setString(4, userDTO.getUserId());
+            ps.setString(4, userDTO.getRemark());
+            ps.setString(5, userDTO.getUserId());
             if (ps.executeUpdate()>0) {
             	log.info("User rejected successfully.");
             	return "1";
@@ -109,13 +111,14 @@ public class UserDAO {
 	public String deleteUser(UserDTO userDTO, String userId, Connection conn) {
 		String currentDate = new DateUtils().getCurrnetDate();
         PreparedStatement ps = null;
-        String sql = "UPDATE user_info set status = ?, modified_by = ?, modified_on = ? where user_id = ?";
+        String sql = "UPDATE user_info set status = ?, modified_by = ?, modified_on = ?, remark=? where user_id = ?";
         try {
             ps = conn.prepareStatement(sql);
             ps.setString(1, WINConstants.DELETE);
             ps.setString(2, userId);
             ps.setString(3, currentDate);
-            ps.setString(4, userDTO.getUserId());
+            ps.setString(4, WINConstants.DELETE);
+            ps.setString(5, userDTO.getUserId());
             if (ps.executeUpdate()>0) {
             	log.info("User rejected successfully.");
             	return "1";
@@ -123,6 +126,31 @@ public class UserDAO {
 				return "0";
 			}
             
+        }
+        catch (Exception e) {
+            log.info(("Exception in rejectUser() :: " + e.getMessage()));
+            e.printStackTrace();
+        }
+        finally {
+        	DatabaseManager.closePreparedStatement(ps);
+        }
+        return "0";
+	}
+	
+	public String deleteUserFromUserMaster(String userId, Connection conn) {
+		//String currentDate = new DateUtils().getCurrnetDate();
+        PreparedStatement ps = null;
+        String sql = "UPDATE user_master set is_active = ?, is_deleted = ? where user_id = ?";
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, "0");
+            ps.setString(2, "1");
+            ps.setString(3, userId);
+            if (ps.executeUpdate()>0) {
+            	log.info("User deleted from user master successfully.");
+            	return "1";
+			}
+			return "0";
         }
         catch (Exception e) {
             log.info(("Exception in rejectUser() :: " + e.getMessage()));
@@ -152,15 +180,16 @@ public class UserDAO {
 				userDTO.setUserName(rs.getString("user_name"));
 				userDTO.setEmailId(rs.getString("email_id"));
 				userDTO.setContactNumber(rs.getString("contact_number"));
+				userDTO.setRoleId(rs.getString("role_id"));
 				userDTO.setStatus(rs.getString("status"));
 				userDTO.setCreatedBy(rs.getString("created_by"));
 				userDTO.setCreatedOn(rs.getString("created_on"));
-				if(rs.getString("user_id").startsWith("UM")) {
-					userDTO.setUserType("MAKER");
-				}
-				if(rs.getString("user_id").startsWith("UC")) {
-					userDTO.setUserType("CHECKER");
-				}
+				userDTO.setRemark(rs.getString("remark"));
+				/*
+				 * if(rs.getString("user_id").startsWith("UM")) { userDTO.setUserType("MAKER");
+				 * } if(rs.getString("user_id").startsWith("UC")) {
+				 * userDTO.setUserType("CHECKER"); }
+				 */
 				lst.add(userDTO);
 			}
 			return lst;
@@ -192,6 +221,8 @@ public class UserDAO {
 				userDTO.setEmailId(rs.getString("email_id"));
 				userDTO.setContactNumber(rs.getString("contact_number"));
 				userDTO.setStatus(rs.getString("status"));
+				userDTO.setRoleId(rs.getString("role_id"));
+				userDTO.setRemark(rs.getString("remark"));
 				//userDTO.setCreatedBy(rs.getString("created_by"));
 				//userDTO.setCreatedOn(rs.getString("created_on"));
 			}
@@ -238,7 +269,7 @@ public class UserDAO {
 		String currentDate = new DateUtils().getCurrnetDate();
         PreparedStatement ps = null;
         String sql = "UPDATE user_info set user_name=?, email_id=?, contact_number=?, modified_by = ?, modified_on = ? where user_id = ?";
-        try {
+        try { //, remark=?, status=?
             ps = conn.prepareStatement(sql);
           //user_id, user_name, email_id, contact_number, status, created_by, created_on
             ps.setString(1, userDTO.getUserName());
@@ -246,6 +277,8 @@ public class UserDAO {
             ps.setString(3, userDTO.getContactNumber());
             ps.setString(4, userId);
             ps.setString(5, currentDate);
+            //ps.setString(6, WINConstants.UPPENDING);
+            //ps.setString(7, WINConstants.UPREQ);
             ps.setString(6, userDTO.getUserId());
             if (ps.executeUpdate()>0) {
             	log.info("User updated successfully.");
@@ -285,5 +318,4 @@ public class UserDAO {
 			DatabaseManager.closePreparedStatement(ps);
 		}
 	}
-
 }
