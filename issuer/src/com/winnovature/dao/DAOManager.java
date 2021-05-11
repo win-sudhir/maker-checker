@@ -326,6 +326,7 @@ public class DAOManager {
 				suppliers.put("supplierId", rs.getString("supplier_id"));
 				suppliers.put("supplierName", rs.getString("supplier_name"));
 				suppliers.put("webSite", rs.getString("web_site"));
+				suppliers.put("remark", rs.getString("remark"));
 				// jo.put("actDeactStatus", rs.getString("act_deact_status"));
 				// jo.put("deleteStatus", rs.getString("delete_status"));
 				// jo.put("is_npci_certified", rs.getString("is_npci_certified"));
