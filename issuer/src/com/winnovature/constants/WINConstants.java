@@ -41,5 +41,20 @@ public class WINConstants {
 	public static String CUSTOMERROLEID = "2";
 	public static String AGENTROLEID = "7";
 	public static String BRANCHROLEID = "6";
-	public static String localBLURL = "http://localhost:8080/winnovature/tag/excemanagement";
+	public static String localBLURL = "http://localhost:8080/issuer/tag/excemanagement";
+	
+	public static String SUPERADMIN="1";		
+	public static String ADMIN="2";				
+	public static String FASTAGMAKER="3";		
+	public static String FASTAGCHECKER="4";		
+	public static String BRANCH="5";			
+	public static String AGENT="6";				
+	public static String BRANCHMAKER="7";		
+	public static String BRANCHCHECKER="8";		
+	public static String SUPPLIER="9";			
+	public static String CUSTOMER="10";			
+	public static String RECONMAKER="11";		
+	public static String RECONCHECKER="12";		
+	public static String DISPUTEMAKER="13";		
+	public static String DISPUTECHECKER="14";
 }
