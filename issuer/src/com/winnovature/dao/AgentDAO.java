@@ -1,5 +1,6 @@
 package com.winnovature.dao;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 
 import com.winnovature.constants.WINConstants;
 import com.winnovature.dto.AgentDTO;
@@ -232,6 +234,27 @@ public class AgentDAO {
 			DatabaseManager.closePreparedStatement(ps);
 		}
 		return "0";
+	}
+
+	public String approveEditedAgent(String agentId, String type, String userId, Connection conn) {
+		CallableStatement cs = null;
+		try {
+
+			String sql = "{CALL pr_update_agent(?,?,?,?)}";
+			cs = conn.prepareCall(sql);
+			cs.setString(1, agentId);
+			cs.setString(2, type);
+			cs.setString(3, userId);
+			cs.registerOutParameter(4, java.sql.Types.VARCHAR);
+			cs.execute();
+			return cs.getString(4);
+		} catch (Exception e) {
+			log.error("approveEditedAgent() Getting Exception   :::    "+ e.getMessage());
+		} finally {
+			DatabaseManager.closeCallableStatement(cs);
+		}
+		return null;
+
 	}
 
 }

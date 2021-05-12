@@ -11,6 +11,7 @@ import com.winnovature.dao.AccountDAO;
 import com.winnovature.dao.AddressDAO;
 import com.winnovature.dao.AgentDAO;
 import com.winnovature.dao.CustomerDAO;
+import com.winnovature.dao.DifferenceDAO;
 import com.winnovature.dao.VirtualAccountDAO;
 import com.winnovature.dto.AccountDTO;
 import com.winnovature.dto.AddressDTO;
@@ -148,9 +149,29 @@ public class AgentService {
 		return responseDTO;
 	}
 
-	public ResponseDTO approveEditedAgent(String type, String header, Connection conn) {
-		// TODO Auto-generated method stub
-		return null;
+	public ResponseDTO approveEditedAgent(String agentId, String type, String userId, Connection conn) {
+		String result = agentDAO.approveEditedAgent(agentId, type, userId, conn);
+		if(result.equals("1")){
+			responseDTO.setStatus(ResponseDTO.success);
+			responseDTO.setMessage(AgentErrorCode.WINNABU008.getErrorMessage());
+			responseDTO.setErrorCode(AgentErrorCode.WINNABU008.name());
+			return responseDTO;
+		}
+		else if(result.equals("2")) {
+			responseDTO.setStatus(ResponseDTO.success);
+			responseDTO.setMessage(AgentErrorCode.WINNABU007.getErrorMessage());
+			responseDTO.setErrorCode(AgentErrorCode.WINNABU007.name());
+			return responseDTO;
+		}
+		responseDTO.setStatus(ResponseDTO.failure);
+		responseDTO.setMessage(AgentErrorCode.WINNABU005.getErrorMessage());
+		responseDTO.setErrorCode(AgentErrorCode.WINNABU005.name());
+		return responseDTO;
+	}
+
+	public String viewEditedDifference(String agentId, String userId, Connection conn) {
+		return DifferenceDAO.getAgentEditedDifference(agentId, conn);
+		//return null;
 	}
 
 	
