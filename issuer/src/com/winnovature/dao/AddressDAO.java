@@ -153,7 +153,7 @@ public class AddressDAO {
 
 		try {
 						
-			String query = "INSERT INTO address_info_edited (user_id, resi_address1, resi_address2, resi_pin, resi_city, resi_state, business_add1, business_add2, business_pin, business_city, business_state) "
+			String query = "INSERT INTO address_edited_info (user_id, resi_address1, resi_address2, resi_pin, resi_city, resi_state, business_add1, business_add2, business_pin, business_city, business_state) "
 					+ "VALUES (?,?,?,?,?,?,?,?,?,?,?) ";
 
 			ps = conn.prepareStatement(query);

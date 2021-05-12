@@ -148,5 +148,10 @@ public class AgentService {
 		return responseDTO;
 	}
 
+	public ResponseDTO approveEditedAgent(String type, String header, Connection conn) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	
 }

@@ -134,7 +134,7 @@ public class AccountDAO {
 
 		try {
 						
-			String query = "INSERT INTO account_info_edited (user_id, bank_name, account_number, account_type, ifsc_code, branch_address) "
+			String query = "INSERT INTO account_edited_info (user_id, bank_name, account_number, account_type, ifsc_code, branch_address) "
 					+ "VALUES (?,?,?,?,?,?) ";
 
 			ps = conn.prepareStatement(query);

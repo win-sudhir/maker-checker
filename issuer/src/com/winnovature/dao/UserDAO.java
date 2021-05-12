@@ -238,6 +238,30 @@ public class UserDAO {
 		return userDTO;
 	}
 	
+	public static String getRoleIdByUser(String userId, Connection conn) {
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String query = null;
+		try {
+			query = "select role_id from user_master WHERE user_id=?";
+			ps = conn.prepareStatement(query);
+			ps.setString(1, userId);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				return rs.getString("role_id");
+			}
+			return null;
+		} catch (Exception e) {
+			log.error("Exception in getting list of getRoleIdByUser() :: " + e.getMessage());
+			log.error(e);
+			e.printStackTrace();
+		} finally {
+			DatabaseManager.closeResultSet(rs);
+			DatabaseManager.closePreparedStatement(ps);
+		}
+		return null;
+	}
+	
 	public String updateUserMaster(String userId, Connection conn) {
 		//String currentDate = new DateUtils().getCurrnetDate();
         PreparedStatement ps = null;

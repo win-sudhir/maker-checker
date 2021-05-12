@@ -103,13 +103,14 @@ public class AgentMakerService {
 
 	public ResponseDTO updateAgent(AgentDTO agentDTO, AddressDTO addressDTO, AccountDTO accountDTO, String userId,
 			Connection conn) {
-		String response = agentMakerDAO.updateAgent(agentDTO, userId, conn);
+		String response = agentMakerDAO.addEditedAgent(agentDTO, conn);
 		if (response.equals("0")) {
 			responseDTO.setStatus(ResponseDTO.failure);
 			responseDTO.setMessage(AgentErrorCode.WINNABU009.getErrorMessage());
 			responseDTO.setErrorCode(AgentErrorCode.WINNABU009.name());
 			return responseDTO;
 		}
+		agentMakerDAO.updateAgent(agentDTO, userId, conn);
 		addressDTO.setUserId(agentDTO.getAgentId());
 		accountDTO.setUserId(agentDTO.getAgentId());
 		AddressDAO.addEditedAddress(conn, addressDTO, userId);// TODO

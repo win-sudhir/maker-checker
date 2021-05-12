@@ -86,12 +86,12 @@ public class AgentCheckerManagement extends HttpServlet {
 			} else if (("deleteAgent").equalsIgnoreCase(requestType)) {
 				agentDTO = new Gson().fromJson(jsonRequest.toString(), AgentDTO.class);
 				responseDTO = agentService.deleteAgent(agentDTO, request.getHeader("userId"), conn);
-			} else if (("getAgentById").equalsIgnoreCase(requestType)) {
+			} /*else if (("getAgentById").equalsIgnoreCase(requestType)) {
 				agentDTO = new Gson().fromJson(jsonRequest.toString(), AgentDTO.class);
 				responseDTO = agentService.getAgentById(agentDTO.getAgentId(), request.getHeader("userId"), conn);
 			} else if (("getAgentList").equalsIgnoreCase(requestType)) {
 				responseDTO = agentService.getAgentList(request.getHeader("userId"), conn);
-			}
+			}*/
 
 			finalResponse = gson.toJson(responseDTO);
 			log.info("*****************Response to /agent/manageagent API()****************");
