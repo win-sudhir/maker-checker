@@ -33,6 +33,7 @@ public class CustomerDTO {
 	private double minSecDeposit;
 	private String kycType;
 	private String valildityUpto;
+	private String remark;
 	
 	public CustomerDTO() {}
 	
@@ -239,6 +240,14 @@ public class CustomerDTO {
 
 	public void setValildityUpto(String valildityUpto) {
 		this.valildityUpto = valildityUpto;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
 	}
 	
 }

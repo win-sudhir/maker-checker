@@ -24,8 +24,8 @@ public class CustomerDAO {
 
 		try {
 
-			String query = "INSERT INTO customer_info (user_id, wallet_id, parent_id, customer_name, email_id, contact_number, dob, is_corporate, customer_type, gender, occupation, is_wallet, status, created_by, created_on) "
-					+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+			String query = "INSERT INTO customer_info (user_id, wallet_id, parent_id, customer_name, email_id, contact_number, dob, is_corporate, customer_type, gender, occupation, is_wallet, status, created_by, created_on, remark) "
+					+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
 
 			ps = conn.prepareStatement(query);
 			ps.setString(1, customerDTO.getUserId());
@@ -43,6 +43,7 @@ public class CustomerDAO {
 			ps.setString(13, WINConstants.NEW);
 			ps.setString(14, userId);
 			ps.setString(15, new DateUtils().getCurrnetDate());
+			ps.setString(16, WINConstants.NEWREQ);
 			WalletDAO.createLTDKYCWallet(conn, userId, customerDTO.getWalletId());
 			//insertUser(customerDTO.getUserId(), "2",userId,"",customerDTO.getEmailId(),conn);
 			ps.executeUpdate();
@@ -84,7 +85,7 @@ public class CustomerDAO {
 
 		try {
 
-			String query = "INSERT INTO customer_info_edited (user_id, customer_name, email_id, contact_number, dob, gender, occupation, status, created_by, created_on) "
+			String query = "INSERT INTO customer_edited_info (user_id, customer_name, email_id, contact_number, dob, gender, occupation, status, created_by, created_on) "
 					+ "VALUES (?,?,?,?,?,?,?,?,?,?) ";
 			
 			
@@ -134,16 +135,19 @@ public class CustomerDAO {
 		try {
 			//UPDATE customer_info c, wallet_info w SET c.status='APPROVE', c.approved_by="admin", c.approved_on=now(), w.max_balance="100000", w.kyc_type="fullkyc"  WHERE c.user_id = "C020071920913" and c.wallet_id=w.wallet_id;
 			String query = "UPDATE customer_info c, wallet_info w "
-					+ "SET c.status=?, c.approved_by=?, c.approved_on=?, w.max_balance=?, w.kyc_type=?  "
+					+ "SET c.status=?, c.approved_by=?, c.approved_on=?, c.modified_by=?, c.modified_on=?, w.max_balance=?, w.kyc_type=?, c.remark=?  "
 					+ "WHERE c.user_id = ? and c.wallet_id=w.wallet_id";
 
 			ps = conn.prepareStatement(query);
 			ps.setString(1, WINConstants.APPROVE);
 			ps.setString(2, userId);
 			ps.setString(3, new DateUtils().getCurrnetDate());
-			ps.setDouble(4, WalletDTO.MAXBALANCE);
-			ps.setString(5, WalletDTO.FULLKYC);
-			ps.setString(6, customerId);
+			ps.setString(4, userId);
+			ps.setString(5, new DateUtils().getCurrnetDate());
+			ps.setDouble(6, WalletDTO.MAXBALANCE);
+			ps.setString(7, WalletDTO.FULLKYC);
+			ps.setString(8, WINConstants.NEWAPP);
+			ps.setString(9, customerId);
 			ps.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -178,7 +182,7 @@ public class CustomerDAO {
 		try {
 
 			String query = "UPDATE customer_info c, wallet_info w, customer_vehicle_info v, account_info a SET c.status=?, c.modified_by=?, c.modified_on=?, "
-					+ "w.status=?, w.modified_by=?, w.modified_on=?, v.status=?, a.status=? "
+					+ "w.status=?, w.modified_by=?, w.modified_on=?, v.status=?, a.status=? c.remark=?"
 					+ "WHERE c.user_id = ? and c.wallet_id=w.wallet_id and v.user_id=c.user_id and a.user_id=c.user_id";
 			String currentDate = new DateUtils().getCurrnetDate();
 			ps = conn.prepareStatement(query);
@@ -190,7 +194,52 @@ public class CustomerDAO {
 			ps.setString(6, currentDate);
 			ps.setString(7, WINConstants.DELETE);
 			ps.setString(8, WINConstants.DELETE);
-			ps.setString(9, customerId);
+			ps.setString(9, WINConstants.DELAPP);
+			ps.setString(10, customerId);
+			ps.executeUpdate();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DatabaseManager.closePreparedStatement(ps);
+		}
+	}
+	
+	public void deleteRejectCustomer(Connection conn, String userId, String customerId) {
+		PreparedStatement ps = null;
+
+		try {
+
+			String query = "UPDATE customer_info SET status=?, modified_by=?, modified_on=?, remark=?  WHERE user_id = ?";
+
+			ps = conn.prepareStatement(query);
+			ps.setString(1, WINConstants.APPROVE);
+			ps.setString(2, userId);
+			ps.setString(3, new DateUtils().getCurrnetDate());
+			ps.setString(4, WINConstants.DELREJ);
+			ps.setString(5, customerId);
+			ps.executeUpdate();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DatabaseManager.closePreparedStatement(ps);
+		}
+	}
+	
+	public void deleteCustomerRequest(Connection conn, String userId, String customerId) {
+		PreparedStatement ps = null;
+
+		try {
+
+			String query = "UPDATE customer_info SET status=?, modified_by=?, modified_on=?, remark=?  WHERE user_id = ?";
+
+			ps = conn.prepareStatement(query);
+			ps.setString(1, WINConstants.DELPENDING);
+			ps.setString(2, userId);
+			ps.setString(3, new DateUtils().getCurrnetDate());
+			ps.setString(4, WINConstants.DELREQ);
+			ps.setString(5, customerId);
 			ps.executeUpdate();
 			
 		} catch (Exception e) {
@@ -207,11 +256,12 @@ public class CustomerDAO {
 		String query= null;
 		try {
 			
-			if(userId.equalsIgnoreCase("admin")) {
-				query = "SELECT * FROM customer_info WHERE status in ('NEW', 'ACTIVE', 'APPROVE')";
+			String roleId = UserDAO.getRoleIdByUser(userId, conn);
+			if (roleId.equals(WINConstants.SUPERADMIN) || roleId.equals(WINConstants.ADMIN) || roleId.equals(WINConstants.BRANCHCHECKER)) {
+				query = "SELECT * FROM customer_info";// WHERE status in ('NEW', 'ACTIVE', 'APPROVE')";
 				ps = conn.prepareStatement(query);
 			}else {
-				query = "SELECT * FROM customer_info WHERE parent_id = ? and status in ('NEW', 'ACTIVE', 'APPROVE')";
+				query = "SELECT * FROM customer_info WHERE parent_id = ?";// and status in ('NEW', 'ACTIVE', 'APPROVE')";
 				ps = conn.prepareStatement(query);
 				ps.setString(1, userId);
 			}
@@ -235,6 +285,7 @@ public class CustomerDAO {
 				customerDTO.setGender(rs.getString("gender"));
 				customerDTO.setOccupation(rs.getString("occupation"));
 				customerDTO.setStatus(rs.getString("status"));
+				customerDTO.setRemark(rs.getString("remark"));
 				customerDTO.setCreatedBy(rs.getString("created_by"));
 				customerDTO.setCreatedOn(rs.getString("created_on"));
 				lst.add(customerDTO);
@@ -321,6 +372,7 @@ public class CustomerDAO {
 				customerDTO.setGender(rs.getString("gender"));
 				customerDTO.setOccupation(rs.getString("occupation"));
 				customerDTO.setStatus(rs.getString("status"));
+				customerDTO.setRemark(rs.getString("remark"));
 				customerDTO.setCreatedBy(rs.getString("created_by"));
 				customerDTO.setCreatedOn(rs.getString("created_on"));
 			}
@@ -593,5 +645,27 @@ public class CustomerDAO {
 	public static void main(String[] args) {
 		String ps = HashGenerator.sha256("admin@123");
 		System.out.println("ps "+ps);
+	}
+
+	public void rejectCustomer(Connection conn, String userId, String customerId, String remark) {
+		PreparedStatement ps = null;
+
+		try {
+
+			String query = "UPDATE customer_info SET status=?, modified_by=?, modified_on=?, remark=?  WHERE user_id = ?";
+
+			ps = conn.prepareStatement(query);
+			ps.setString(1, WINConstants.APPROVE);
+			ps.setString(2, userId);
+			ps.setString(3, new DateUtils().getCurrnetDate());
+			ps.setString(4, remark);//WINConstants.DELREJ);
+			ps.setString(5, customerId);
+			ps.executeUpdate();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DatabaseManager.closePreparedStatement(ps);
+		}
 	}
 }

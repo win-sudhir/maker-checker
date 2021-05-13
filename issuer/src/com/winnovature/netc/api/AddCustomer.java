@@ -44,8 +44,7 @@ public class AddCustomer extends HttpServlet {
 		try {
 			conn = DatabaseManager.getAutoCommitConnection();
 
-			boolean checkSession = CheckSession.isValidSession(request.getHeader("userId"),
-					request.getHeader("Authorization"), conn);
+			boolean checkSession = CheckSession.isValidSession(request.getHeader("userId"), request.getHeader("Authorization"), conn);
 			if (!checkSession) {
 				response.setStatus(403);
 				return;
@@ -68,11 +67,12 @@ public class AddCustomer extends HttpServlet {
 			responseDTO = CustomerService.addCustomer(conn, customerDTO, addressDTO, accountDTO, kycDTO, vehicleDTO,
 					request.getHeader("userId"));
 			finalResponse = gson.toJson(responseDTO);
+			response.setStatus(200);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.info(e.getMessage());
 		} finally {
-			log.info("*****************Response to /customer/add API()****************");
+			log.info("*****************Response to customer/add API()****************");
 			out.write(finalResponse);
 			log.info(finalResponse);
 			DatabaseManager.commitConnection(conn);

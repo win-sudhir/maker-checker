@@ -63,7 +63,7 @@ public class AgentCheckerManagement extends HttpServlet {
 			AgentDTO agentDTO = new AgentDTO();
 			String requestType = jsonRequest.getString("requestType");
 			log.info("UserManagement requestType " + requestType);
-
+			/*
 			if (("updateAgent").equalsIgnoreCase(requestType)) {
 				JSONObject agentInfo = jsonRequest.getJSONObject("agentInfo");
 				JSONObject address = jsonRequest.getJSONObject("address");
@@ -75,8 +75,8 @@ public class AgentCheckerManagement extends HttpServlet {
 				responseDTO = agentService.updateAgent(agentDTO, addressDTO, accountDTO, request.getHeader("userId"),
 						conn);
 			}
-
-			else if (("approveAgent").equalsIgnoreCase(requestType)) {
+			*/
+			if (("approveAgent").equalsIgnoreCase(requestType)) {
 				log.info("Request Step 1");
 				agentDTO = new Gson().fromJson(jsonRequest.toString(), AgentDTO.class);
 				responseDTO = agentService.approveAgent(agentDTO, request.getHeader("userId"), conn);

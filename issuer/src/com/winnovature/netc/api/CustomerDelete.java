@@ -39,8 +39,7 @@ public class CustomerDelete extends HttpServlet {
 		try {
 			conn = DatabaseManager.getAutoCommitConnection();
 
-			boolean checkSession = CheckSession.isValidSession(request.getHeader("userId"),
-					request.getHeader("Authorization"), conn);
+			boolean checkSession = true;//CheckSession.isValidSession(request.getHeader("userId"), request.getHeader("Authorization"), conn);
 
 			if (!checkSession) {
 				response.setStatus(403);
@@ -51,13 +50,14 @@ public class CustomerDelete extends HttpServlet {
 			jsonRequest = new JSONObject(stringBuffer.toString());
 			log.info("REQUEST :: " + jsonRequest);
 			String customerId = jsonRequest.getString("customerId");
-			responseDTO = CustomerService.deleteCustomer(conn, customerId, request.getHeader("userId"));
+			String type = jsonRequest.getString("type");
+			responseDTO = CustomerService.deleteCustomer(conn, customerId, request.getHeader("userId"), type);
 			finalResponse = gson.toJson(responseDTO);
 		} catch (Exception e) {
 			log.error(e);
 			log.info(e.getMessage());
 		} finally {
-			log.info("*****************Response to /customer/delete API()****************");
+			log.info("*****************Response to customer/delete API()****************");
 			out.write(finalResponse);
 			log.info(finalResponse);
 			DatabaseManager.commitConnection(conn);

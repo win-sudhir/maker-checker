@@ -37,8 +37,7 @@ public class GetAllCustomer extends HttpServlet {
 		Connection conn = null;
 		try {
 			conn = DatabaseManager.getAutoCommitConnection();
-			boolean checkSession = CheckSession.isValidSession(request.getHeader("userId"),
-					request.getHeader("Authorization"), conn);
+			boolean checkSession = CheckSession.isValidSession(request.getHeader("userId"), request.getHeader("Authorization"), conn);
 
 			if (!checkSession) {
 				response.setStatus(403);
@@ -52,11 +51,13 @@ public class GetAllCustomer extends HttpServlet {
 				log.info("getcustomer by id : " + customerId);
 				responseDTO = CustomerService.getSingleCustomer(conn, customerId);
 				finalResponse = gson.toJson(responseDTO);
+				response.setStatus(200);
 			} else {
 				log.info("All cusotmers");
 				List<CustomerDTO> data = new CustomerDAO().getAllCustomers(conn, userId);
 				responseDTO.setData(data);
 				finalResponse = gson.toJson(responseDTO);
+				response.setStatus(200);
 			}
 		} catch (Exception e) {
 			log.error(e);

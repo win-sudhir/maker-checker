@@ -22,11 +22,10 @@ import com.winnovature.utils.DatabaseManager;
 import com.winnovature.utils.MemoryComponent;
 import com.winnovature.utils.RequestReaderUtility;
 
-@WebServlet("/customer/approve")
-public class CustomerApprove extends HttpServlet {
-	static Logger log = Logger.getLogger(CustomerApprove.class.getName());
-
+@WebServlet("/customer/reqdelete")
+public class CustomerRequestDelete extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	static Logger log = Logger.getLogger(CustomerRequestDelete.class.getName());
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -51,19 +50,13 @@ public class CustomerApprove extends HttpServlet {
 			jsonRequest = new JSONObject(stringBuffer.toString());
 			log.info("REQUEST :: " + jsonRequest);
 			String customerId = jsonRequest.getString("customerId");
-			String type = jsonRequest.getString("type");
-			String remark = "";
-			if(type.equalsIgnoreCase("REJECT")){
-				remark = jsonRequest.getString("remark");
-			}
-			responseDTO = CustomerService.approveCustomer(conn, customerId, request.getHeader("userId"), type, remark);
+			responseDTO = CustomerService.deleteCustomerRequest(conn, customerId, request.getHeader("userId"));
 			finalResponse = gson.toJson(responseDTO);
-			response.setStatus(200);
 		} catch (Exception e) {
 			log.error(e);
 			log.info(e.getMessage());
 		} finally {
-			log.info("*****************Response to customer/approve API()****************");
+			log.info("*****************Response to customer/reqdelete API()****************");
 			out.write(finalResponse);
 			log.info(finalResponse);
 			DatabaseManager.commitConnection(conn);

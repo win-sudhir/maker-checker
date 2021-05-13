@@ -63,8 +63,8 @@ public class CustomerService {
 		TransactionService.sendSMS(customerDTO.getContactNumber(), smsContent);
 		//////////////////////////////////////////////////////////////////////////
 		responseDTO.setStatus(ResponseDTO.success);
-		responseDTO.setMessage(CustomerErrorCode.WINNBU000.getErrorMessage());
-		responseDTO.setErrorCode(CustomerErrorCode.WINNBU000.name());
+		responseDTO.setMessage(CustomerErrorCode.WINNCBU001.getErrorMessage());
+		responseDTO.setErrorCode(CustomerErrorCode.WINNCBU001.name());
 		/*
 		responseDTO.setStatus(ResponseDTO.success);
 		responseDTO.setErrorCode("WINCUBU0001");
@@ -126,12 +126,27 @@ public class CustomerService {
 		return responseDTO;
 	}
 
-	public static ResponseDTO deleteCustomer(Connection conn, String customerId, String userId) {
+	public static ResponseDTO deleteCustomer(Connection conn, String customerId, String userId, String type) {
 		ResponseDTO responseDTO = new ResponseDTO();
-		new CustomerDAO().deleteCustomer(conn, userId, customerId);
-		responseDTO.setStatus(ResponseDTO.success);
-		responseDTO.setMessage("Customer deleted successfully.");
+		if(type.equalsIgnoreCase("APPROVE")) {
+			new CustomerDAO().deleteCustomer(conn, userId, customerId);
+			responseDTO.setMessage(CustomerErrorCode.WINNCBU007.getErrorMessage());
+			responseDTO.setErrorCode(CustomerErrorCode.WINNCBU007.name());
+		}else if(type.equalsIgnoreCase("REJECT")) {
+			new CustomerDAO().deleteRejectCustomer(conn, userId, customerId);
+			responseDTO.setMessage(CustomerErrorCode.WINNCBU008.getErrorMessage());
+			responseDTO.setErrorCode(CustomerErrorCode.WINNCBU008.name());
+		}
 		responseDTO.setErrorCode("WINCUBU0003");
+		return responseDTO;
+	}
+	
+	public static ResponseDTO deleteCustomerRequest(Connection conn, String customerId, String userId) {
+		ResponseDTO responseDTO = new ResponseDTO();
+		new CustomerDAO().deleteCustomerRequest(conn, userId, customerId);
+		responseDTO.setStatus(ResponseDTO.success);
+		responseDTO.setMessage(CustomerErrorCode.WINNCBU005.getErrorMessage());
+		responseDTO.setErrorCode(CustomerErrorCode.WINNCBU005.name());
 		return responseDTO;
 	}
 	
@@ -162,11 +177,12 @@ public class CustomerService {
 		CustomerDAO.addEditedCustomer(conn, customerDTO, userId);
 		AddressDAO.addEditedAddress(conn, addressDTO, userId);
 		AccountDAO.addEditedAccount(conn, accountDTO, userId);
-		KycDAO.addEditedKYC(conn, kycDTO, userId);
-		VehicleDAO.addEditedVehicle(conn, vehicleDTO, customerDTO.getUserId());
+		//KycDAO.addEditedKYC(conn, kycDTO, userId);
+		//VehicleDAO.addEditedVehicle(conn, vehicleDTO, customerDTO.getUserId());
 		responseDTO.setStatus(ResponseDTO.success);
-		responseDTO.setErrorCode("WINCUBU0002");
-		responseDTO.setMessage("Customer update Request Initiated successfully.");
+		responseDTO.setMessage(CustomerErrorCode.WINNCBU002.getErrorMessage());
+		responseDTO.setErrorCode(CustomerErrorCode.WINNCBU002.name());
+		
 		return responseDTO;
 	}
 	
@@ -180,15 +196,24 @@ public class CustomerService {
 		return responseDTO;
 	}
 	
-	public static ResponseDTO approveCustomer(Connection conn, String customerId, String userId) {
+	public static ResponseDTO approveCustomer(Connection conn, String customerId, String userId, String type, String remark) {
 		ResponseDTO responseDTO = new ResponseDTO();
-		new CustomerDAO().approveCustomer(conn, userId, customerId);
-		responseDTO.setStatus(ResponseDTO.success);
-		responseDTO.setMessage("Customer approved successfully.");
-		responseDTO.setErrorCode("WINCUBU0004");
+		String smsContent = null;
+		if(type.equalsIgnoreCase("APPROVE")) {
+			new CustomerDAO().approveCustomer(conn, userId, customerId);
+			responseDTO.setStatus(ResponseDTO.success);
+			responseDTO.setMessage(CustomerErrorCode.WINNCBU006.getErrorMessage());
+			responseDTO.setErrorCode(CustomerErrorCode.WINNCBU006.name());
+			smsContent = "Your FASTag wallet has been approved and account converted into full KYC.";
+		} else if(type.equalsIgnoreCase("REJECT")) {
+			new CustomerDAO().rejectCustomer(conn, userId, customerId, remark);
+			responseDTO.setStatus(ResponseDTO.success);
+			responseDTO.setMessage(CustomerErrorCode.WINNCBU009.getErrorMessage());
+			responseDTO.setErrorCode(CustomerErrorCode.WINNCBU009.name());
+			smsContent = "Your FASTag wallet has been rejected.";
+		}
 		///////////////////////SENDIND SMS///////////////////////////////////////
 		CustomerDTO customerDTO = new CustomerDAO().geCustomersWalletInfo(conn, customerId);
-		String smsContent = "Your FASTag wallet has been approved and account converted into full KYC.";
 		TransactionService.sendSMS(customerDTO.getContactNumber(), smsContent);
 		//////////////////////////////////////////////////////////////////////////
 		return responseDTO;
