@@ -18,6 +18,9 @@ public enum CustomerErrorCode {
 	WINNCBU007("Customer delete request approved successfully."),
 	WINNCBU008("Customer delete request rejected successfully."),
 	WINNCBU009("Customer creation request rejected successfully."),
+	WINNCBU0010("Customer update request approved successfully."),
+	WINNCBU0011("Customer update request rejected successfully."),
+	WINNCBU0012("Something went wrong, Please try again."),
 	
 	WINNBU0019("EmailId is already present in customer."),
 	WINNBU0020("Mobile number is already present in customer."),

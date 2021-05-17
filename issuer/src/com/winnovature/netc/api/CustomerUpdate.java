@@ -44,7 +44,7 @@ public class CustomerUpdate extends HttpServlet {
 		try {
 			conn = DatabaseManager.getAutoCommitConnection();
 
-			boolean checkSession = true;//CheckSession.isValidSession(request.getHeader("userId"), request.getHeader("Authorization"), conn);
+			boolean checkSession = CheckSession.isValidSession(request.getHeader("userId"), request.getHeader("Authorization"), conn);
 
 			if (!checkSession) {
 				response.setStatus(403);
@@ -64,14 +64,14 @@ public class CustomerUpdate extends HttpServlet {
 			AccountDTO accountDTO = new Gson().fromJson(account.toString(), AccountDTO.class);
 			KycDTO kycDTO = new Gson().fromJson(kyc.toString(), KycDTO.class);
 			VehicleDTO vehicleDTO = new Gson().fromJson(stringBuffer.toString(), VehicleDTO.class);
-			responseDTO = CustomerService.updateCustomer(conn, customerDTO, addressDTO, accountDTO, kycDTO, vehicleDTO,
+			responseDTO = CustomerService.editCustomer(conn, customerDTO, addressDTO, accountDTO, kycDTO, vehicleDTO,
 					request.getHeader("userId"));
 			finalResponse = gson.toJson(responseDTO);
 		} catch (Exception e) {
 			log.error(e);
 			log.info(e.getMessage());
 		} finally {
-			log.info("*****************Response to /customer/edit API()****************");
+			log.info("*****************Response to customer/edit API()****************");
 			out.write(finalResponse);
 			log.info(finalResponse);
 			DatabaseManager.commitConnection(conn);

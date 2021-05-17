@@ -10,6 +10,7 @@ import com.winnovature.constants.WINConstants;
 import com.winnovature.dao.AccountDAO;
 import com.winnovature.dao.AddressDAO;
 import com.winnovature.dao.CustomerDAO;
+import com.winnovature.dao.DifferenceDAO;
 import com.winnovature.dao.KycDAO;
 import com.winnovature.dao.VehicleDAO;
 import com.winnovature.dto.AccountDTO;
@@ -222,6 +223,32 @@ public class CustomerService {
 	public static CustomerDTO getCustomerWalletInfo(Connection conn, String customerId) {
 		CustomerDTO customerDTO = new CustomerDAO().geCustomersWalletInfo(conn, customerId);
 		return customerDTO;
+	}
+
+	public static ResponseDTO approveEditedCustomer(String customerId, String type, String userId, Connection conn) {
+		String result = new CustomerDAO().approveEditedCustomer(customerId, type, userId, conn);
+		ResponseDTO responseDTO = new ResponseDTO();
+		if(result.equals("1")){
+			responseDTO.setStatus(ResponseDTO.success);
+			responseDTO.setMessage(CustomerErrorCode.WINNCBU0010.getErrorMessage());
+			responseDTO.setErrorCode(CustomerErrorCode.WINNCBU0010.name());
+			return responseDTO;
+		}
+		else if(result.equals("2")) {
+			responseDTO.setStatus(ResponseDTO.success);
+			responseDTO.setMessage(CustomerErrorCode.WINNCBU0011.getErrorMessage());
+			responseDTO.setErrorCode(CustomerErrorCode.WINNCBU0011.name());
+			return responseDTO;
+		}
+		responseDTO.setStatus(ResponseDTO.failure);
+		responseDTO.setMessage(CustomerErrorCode.WINNCBU0012.getErrorMessage());
+		responseDTO.setErrorCode(CustomerErrorCode.WINNCBU0012.name());
+		return responseDTO;
+	}
+
+	public static String viewEditedDifference(String customerId, String userId, Connection conn) {
+		return DifferenceDAO.getCustomerEditedDifference(customerId, conn);
+		//return null;
 	}
 }
 		

@@ -39,7 +39,7 @@ public class CustomerRequestDelete extends HttpServlet {
 		try {
 			conn = DatabaseManager.getAutoCommitConnection();
 
-			boolean checkSession = true;//CheckSession.isValidSession(request.getHeader("userId"), request.getHeader("Authorization"), conn);
+			boolean checkSession = CheckSession.isValidSession(request.getHeader("userId"), request.getHeader("Authorization"), conn);
 
 			if (!checkSession) {
 				response.setStatus(403);

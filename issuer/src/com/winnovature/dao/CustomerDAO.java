@@ -1,5 +1,6 @@
 package com.winnovature.dao;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,8 +32,8 @@ public class CustomerDAO {
 			ps.setString(1, customerDTO.getUserId());
 			ps.setString(2, customerDTO.getWalletId());
 			ps.setString(3, userId);
-			ps.setString(4, customerDTO.getCustomerName().toUpperCase());
-			ps.setString(5, customerDTO.getEmailId().toLowerCase());
+			ps.setString(4, customerDTO.getCustomerName());//.toUpperCase());
+			ps.setString(5, customerDTO.getEmailId());//.toLowerCase());
 			ps.setString(6, customerDTO.getContactNumber());
 			ps.setString(7, customerDTO.getDob());
 			ps.setString(8, CustomerDTO.NOTCORPORATE);
@@ -62,8 +63,8 @@ public class CustomerDAO {
 			String query = "UPDATE customer_info SET customer_name=?, email_id=?, contact_number=?, dob=?, gender=?, occupation=?,modified_by=?, modified_on=?  WHERE user_id = ?";
 
 			ps = conn.prepareStatement(query);
-			ps.setString(1, customerDTO.getCustomerName().toUpperCase());
-			ps.setString(2, customerDTO.getEmailId().toLowerCase());
+			ps.setString(1, customerDTO.getCustomerName());//.toUpperCase());
+			ps.setString(2, customerDTO.getEmailId());//.toLowerCase());
 			ps.setString(3, customerDTO.getContactNumber());
 			ps.setString(4, customerDTO.getDob());
 			ps.setString(5, customerDTO.getGender());
@@ -85,21 +86,24 @@ public class CustomerDAO {
 
 		try {
 
-			String query = "INSERT INTO customer_edited_info (user_id, customer_name, email_id, contact_number, dob, gender, occupation, status, created_by, created_on) "
+			String query = "INSERT INTO customer_edited_info (user_id, parent_id, customer_name, email_id, contact_number, dob, is_corporate, gender, occupation, is_wallet) "
 					+ "VALUES (?,?,?,?,?,?,?,?,?,?) ";
 			
 			
 			ps = conn.prepareStatement(query);
 			ps.setString(1, customerDTO.getUserId());
-			ps.setString(2, customerDTO.getCustomerName().toUpperCase());
-			ps.setString(3, customerDTO.getEmailId().toLowerCase());
-			ps.setString(4, customerDTO.getContactNumber());
-			ps.setString(5, customerDTO.getDob());
-			ps.setString(6, customerDTO.getGender());
-			ps.setString(7, customerDTO.getOccupation());
-			ps.setString(8, WINConstants.UPREQ);
-			ps.setString(9, userId);
-			ps.setString(10, new DateUtils().getCurrnetDate());
+			ps.setString(2, customerDTO.getParentId());
+			ps.setString(3, customerDTO.getCustomerName());//.toUpperCase());
+			ps.setString(4, customerDTO.getEmailId());//.toLowerCase());
+			ps.setString(5, customerDTO.getContactNumber());
+			ps.setString(6, customerDTO.getDob());
+			ps.setString(7, customerDTO.getIsCorporate());
+			ps.setString(8, customerDTO.getGender());
+			ps.setString(9, customerDTO.getOccupation());
+			ps.setString(10, customerDTO.getIsWallet());
+			//ps.setString(10, WINConstants.UPREQ);
+			//ps.setString(10, userId);
+			//ps.setString(11, new DateUtils().getCurrnetDate());
 			
 			ps.executeUpdate();
 		} catch (Exception e) {
@@ -667,5 +671,25 @@ public class CustomerDAO {
 		} finally {
 			DatabaseManager.closePreparedStatement(ps);
 		}
+	}
+
+	public String approveEditedCustomer(String customerId, String type, String userId, Connection conn) {
+		CallableStatement cs = null;
+		try {
+
+			String sql = "{CALL pr_update_customer(?,?,?,?)}";
+			cs = conn.prepareCall(sql);
+			cs.setString(1, customerId);
+			cs.setString(2, type);
+			cs.setString(3, userId);
+			cs.registerOutParameter(4, java.sql.Types.VARCHAR);
+			cs.execute();
+			return cs.getString(4);
+		} catch (Exception e) {
+			log.error("approveEditedCustomer() Getting Exception   :::    "+ e.getMessage());
+		} finally {
+			DatabaseManager.closeCallableStatement(cs);
+		}
+		return null;
 	}
 }

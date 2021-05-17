@@ -19,14 +19,15 @@ import com.winnovature.dao.CheckSession;
 import com.winnovature.dto.AgentDTO;
 import com.winnovature.dto.ResponseDTO;
 import com.winnovature.service.AgentService;
+import com.winnovature.service.CustomerService;
 import com.winnovature.utils.DatabaseManager;
 import com.winnovature.utils.MemoryComponent;
 import com.winnovature.utils.RequestReaderUtility;
 
-@WebServlet("/agentedit/approve")
-public class ApproveEditedAgent extends HttpServlet {
+@WebServlet("/customeredit/approve")
+public class ApproveEditedCustomer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	static Logger log = Logger.getLogger(ApproveEditedAgent.class.getName());
+	static Logger log = Logger.getLogger(ApproveEditedCustomer.class.getName());
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -50,32 +51,29 @@ public class ApproveEditedAgent extends HttpServlet {
 
 			String ipAddress = request.getRemoteAddr();
 			
-			AgentService agentService = new AgentService();
 			stringBuffer = RequestReaderUtility.getStringBufferRequest(request);
 			jsonRequest = new JSONObject(stringBuffer.toString());
 			log.info("jsonRequest " + jsonRequest);
-			//AgentDTO agentDTO = new AgentDTO();
 			String requestType = jsonRequest.getString("requestType");
-			String agentId = jsonRequest.getString("agentId");
+			String customerId = jsonRequest.getString("customerId");
 			log.info("UserManagement requestType " + requestType);
 
-			if (("approveEditedAgent").equalsIgnoreCase(requestType)) {
+			if (("approveEditedCustomer").equalsIgnoreCase(requestType)) {
 				String type = jsonRequest.getString("type");
 				
-				responseDTO = agentService.approveEditedAgent(agentId, type, request.getHeader("userId"),
+				responseDTO = CustomerService.approveEditedCustomer(customerId, type, request.getHeader("userId"),
 						conn);
 				finalResponse = gson.toJson(responseDTO);
 			}
 
-			else if (("viewEditedAgent").equalsIgnoreCase(requestType)) {
-				log.info("viewEditedAgent--");
-				//agentDTO = new Gson().fromJson(jsonRequest.toString(), AgentDTO.class);
-				String result = agentService.viewEditedDifference(agentId, request.getHeader("userId"), conn);
+			else if (("viewEditedCustomer").equalsIgnoreCase(requestType)) {
+				log.info("viewEditedCustomer--");
+				String result = CustomerService.viewEditedDifference(customerId, request.getHeader("userId"), conn);
 				finalResponse = result;
 			} 
 
 			
-			log.info("*****************Response to agentedit/approve API()****************");
+			log.info("*****************Response to customeredit/approve API()****************");
 
 		} catch (Exception e) {
 			log.error(e);
