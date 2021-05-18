@@ -116,7 +116,7 @@ public class AgentMakerDAO {
 				//ps.setString(1, userId);
 			}
 			else {//if (roleId.equals(WINConstants.BRANCH)) {
-				query = "select * from agent_info WHERE created_by=? AND status in ('ACTIVE','APPROVE','REJECT') order by created_on desc";
+				query = "select * from agent_info WHERE created_by=? order by created_on desc";//AND status in ('ACTIVE','APPROVE','REJECT')
 				ps = conn.prepareStatement(query);
 				ps.setString(1, userId);
 			}
@@ -137,8 +137,8 @@ public class AgentMakerDAO {
 				agentDTO.setRemark(rs.getString("remark"));
 				agentDTO.setCreatedBy(rs.getString("created_by"));
 				agentDTO.setCreatedOn(rs.getString("created_on"));
-				agentDTO.setStatusMessage(rs.getString("status_message"));
-				agentDTO.setRejectReason(rs.getString("reject_reason"));
+				//agentDTO.setStatusMessage(rs.getString("status_message"));
+				//agentDTO.setRejectReason(rs.getString("reject_reason"));
 				lst.add(agentDTO);
 			}
 			return lst;

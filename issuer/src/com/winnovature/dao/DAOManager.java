@@ -22,38 +22,37 @@ import com.winnovature.utils.DatabaseManager;
 public class DAOManager {
 	static Logger log = Logger.getLogger(DAOManager.class.getName());
 
-	public boolean approveSupplier(String supplier_id, String userId) {
+	public boolean approveSupplier(String supplierId, String userId) {
 		boolean approve = false;
 
-		Connection con = null;
+		Connection conn = null;
 		PreparedStatement preparedStmt = null;
 		ResultSet rs = null;
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date date = new Date();
-		String approvedOn = dateFormat.format(date);
-
-		String sql = "update supplier_master set is_approved = ?, approved_by = ?, approved_on = ?,act_deact_status=?,act_date=?,last_updated_by=? where supplier_id='"
-				+ supplier_id + "'";
+		String currentDate = dateFormat.format(date);
+		String sql = "update supplier_master set status = ?, approved_by = ?, approved_on = ?, last_updated_by=?, last_updated_on=?, remark=? where supplier_id=? ";
 		try {
-			con = DatabaseManager.getConnection();// new DBConnection().getConnection();
-			preparedStmt = con.prepareStatement(sql);
-			preparedStmt.setInt(1, 1);
+			conn = DatabaseManager.getConnection();// new DBConnection().getConnection();
+			preparedStmt = conn.prepareStatement(sql);
+			preparedStmt.setString(1, WINConstants.APPROVE);
 			preparedStmt.setString(2, userId);
-			preparedStmt.setString(3, approvedOn);
-			preparedStmt.setString(4, "1");
-			preparedStmt.setString(5, approvedOn);
-			preparedStmt.setString(6, userId);
+			preparedStmt.setString(3, currentDate);
+			preparedStmt.setString(4, userId);
+			preparedStmt.setString(5, currentDate);
+			preparedStmt.setString(6, WINConstants.NEWAPP);
+			preparedStmt.setString(7, supplierId);
 			preparedStmt.executeUpdate();
 			approve = true;
 			log.info("Successfully approved.........");
 		} catch (Exception e) {
-			log.info("Something went wrong while approving ..." + e);
+			log.info("Something went wrong while approving supplier..." + e);
 		}
 
 		finally {
 			DatabaseManager.closeResultSet(rs);
 			DatabaseManager.closePreparedStatement(preparedStmt);
-			DatabaseManager.closeConnection(con);
+			DatabaseManager.closeConnection(conn);
 
 		}
 
@@ -297,7 +296,7 @@ public class DAOManager {
 		String query = null;
 		try {
 
-			query = "SELECT * from supplier_master where is_deleted=?";
+			query = "SELECT * from supplier_master WHERE status not in('DELETE') ORDER BY created_on DESC";
 			ps = conn.prepareStatement(query);
 			ps.setString(1, "0");
 
@@ -305,12 +304,9 @@ public class DAOManager {
 			supplier = new JSONArray();
 			while (rs.next()) {
 				suppliers = new JSONObject();
-				suppliers.put("isDeleted", rs.getString("is_deleted"));
-				suppliers.put("isApproved", rs.getString("is_approved"));
-
+				suppliers.put("supplierId", rs.getString("supplier_id"));
+				suppliers.put("supplierName", rs.getString("supplier_name"));
 				suppliers.put("GSTN", rs.getString("gstn"));
-				// jo.put("approvedOn", rs.getString("approved_on"));
-				// jo.put("approvedby", rs.getString("approved_by"));
 				suppliers.put("contactNumber1", rs.getString("contact_number1"));
 				suppliers.put("contactNumber2", rs.getString("contact_number2"));
 				suppliers.put("contactPerson", rs.getString("contact_person"));
@@ -323,13 +319,9 @@ public class DAOManager {
 				suppliers.put("minOrderQty", rs.getString("min_order_qty"));
 				suppliers.put("npciCertificationExpiry", rs.getString("npci_certification_expiry"));
 				suppliers.put("status", rs.getString("status"));
-				suppliers.put("supplierId", rs.getString("supplier_id"));
-				suppliers.put("supplierName", rs.getString("supplier_name"));
 				suppliers.put("webSite", rs.getString("web_site"));
 				suppliers.put("remark", rs.getString("remark"));
-				// jo.put("actDeactStatus", rs.getString("act_deact_status"));
-				// jo.put("deleteStatus", rs.getString("delete_status"));
-				// jo.put("is_npci_certified", rs.getString("is_npci_certified"));
+				
 				supplier.put(suppliers);
 			}
 
@@ -767,262 +759,6 @@ public class DAOManager {
 		return jo.toString();
 	}
 
-	public JSONArray getStAddress() {
-		PreparedStatement ps = null;
-		Connection con = null;
-		ResultSet rs = null;
-		JSONArray report = null;
-		String query = null;
-		try {
-			con = DatabaseManager.getConnection();
-			query = "SELECT address_master.user_id FROM address_master JOIN staff_master ON (staff_master.staff_id = address_master.user_id)";
-			ps = con.prepareStatement(query);
-
-			rs = ps.executeQuery();
-			report = new JSONArray();
-			while (rs.next()) {
-				JSONObject jo = new JSONObject();
-				if (rs.getString("is_active").equals("1")) {
-					jo.put("isActive", true);
-				} else {
-					jo.put("isActive", false);
-				}
-				if (rs.getString("is_deleted").equals("1")) {
-					jo.put("isDeleted", true);
-				} else {
-					jo.put("isDeleted", false);
-				}
-
-				/*
-				 * jo.put("menuDescription", rs.getString("user_id")); jo.put("menuId",
-				 * rs.getString("menu_id")); jo.put("menuLink", rs.getString("menu_link"));
-				 * jo.put("menushortName", rs.getString("short_name")); report.put(jo);
-				 */
-
-			}
-
-		} catch (Exception e) {
-
-			log.error("DAOManager.java Getting Exception   :::    ", e);
-		}
-
-		finally {
-			DatabaseManager.closeResultSet(rs);
-			DatabaseManager.closePreparedStatement(ps);
-			DatabaseManager.closeConnection(con);
-
-		}
-
-		return report;
-	}
-
-	public JSONObject getStaffAddress(String user_id) {
-		PreparedStatement ps = null;
-		Connection con = null;
-		ResultSet rs = null;
-		JSONObject jo = null;
-		String query = null;
-		try {
-			con = DatabaseManager.getConnection();
-			query = "SELECT * FROM address_master where user_id = ? and is_deleted=?";
-			ps = con.prepareStatement(query);
-			ps.setString(1, user_id);
-			ps.setString(2, "0");
-			rs = ps.executeQuery();
-
-			while (rs.next()) {
-				jo = new JSONObject();
-
-				if (rs.getString("is_deleted").equals("0")) {
-					jo.put("isDeleted", false);
-				} else {
-					jo.put("isDeleted", true);
-				}
-
-				jo.put("Id", rs.getString("id"));
-				jo.put("businessAddr1", rs.getString("business_add1"));
-				jo.put("businessAddr2", rs.getString("business_add2"));
-				jo.put("businessCity", rs.getString("business_city"));
-				jo.put("businessPin", rs.getString("business_pin"));
-				jo.put("businessState", rs.getString("business_state"));
-				jo.put("resiAddr1", rs.getString("resi_add1"));
-				jo.put("resiAddr2", rs.getString("resi_address2"));
-				jo.put("resiCity", rs.getString("resi_city"));
-				jo.put("resiPin", rs.getString("resi_pin"));
-				jo.put("resiState", rs.getString("resi_state"));
-				jo.put("userId", rs.getString("user_id"));
-
-			}
-
-		} catch (Exception e) {
-
-			log.error("DAOManager.java Getting Exception   :::    ", e);
-		}
-
-		finally {
-			DatabaseManager.closeResultSet(rs);
-			DatabaseManager.closePreparedStatement(ps);
-			DatabaseManager.closeConnection(con);
-
-		}
-
-		return jo;
-	}
-
-	public JSONObject getStaff(String staff_id) {
-		PreparedStatement ps = null;
-		Connection con = null;
-		ResultSet rs = null;
-
-		JSONObject jo = null;
-		String query = null;
-		try {
-			con = DatabaseManager.getConnection();// new DBConnection().getConnection();
-			query = "SELECT * from staff_master where staff_id = ? and is_deleted=?";
-			ps = con.prepareStatement(query);
-			ps.setString(1, staff_id);
-			ps.setString(2, "0");
-			rs = ps.executeQuery();
-
-			while (rs.next()) {
-				jo = new JSONObject();
-
-				if (rs.getString("is_deleted").equals("0")) {
-					jo.put("isDeleted", false);
-				} else {
-					jo.put("isDeleted", true);
-				}
-				if (rs.getString("is_approved").equals("1")) {
-					jo.put("isApproved", true);
-				} else {
-					jo.put("isApproved", false);
-				}
-				if (rs.getString("is_active").equals("1")) {
-					jo.put("isActive", true);
-				} else {
-					jo.put("isActive", false);
-				}
-
-				jo.put("approvedOn", rs.getString("approved_on"));
-				jo.put("approvedby", rs.getString("approved_by"));
-				// jo.put("branchId", rs.getString("branch_id"));
-				jo.put("roleId", rs.getString("role_id")); // add 23-08
-
-				jo.put("contactNumber", rs.getString("contact_number"));
-				jo.put("createdBy", rs.getString("created_by"));
-				jo.put("createdOn", rs.getString("created_on"));
-				jo.put("emailId", rs.getString("email_id"));
-				jo.put("staffId", rs.getString("staff_id"));
-				jo.put("staffName", rs.getString("staff_name"));
-				jo.put("actDeactStatus", rs.getString("act_deact_status"));
-				jo.put("deleteStatus", rs.getString("delete_status"));
-
-			}
-
-		} catch (Exception e) {
-
-			log.error("DAOManager.java Getting Error   :::    ", e);
-		}
-
-		finally {
-			DatabaseManager.closeResultSet(rs);
-			DatabaseManager.closePreparedStatement(ps);
-			DatabaseManager.closeConnection(con);
-
-		}
-
-		return jo;
-	}
-
-	public String getStaffData(String userid) {
-		PreparedStatement ps = null;
-		Connection con = null;
-		ResultSet rs = null;
-		JSONObject jo = null;
-
-		JSONArray report = null;
-		String query = null;
-		try {
-			con = DatabaseManager.getConnection();// new DBConnection().getConnection();
-			// changes for maker and checker //19-06-2019
-			if (userid.equalsIgnoreCase("admin") || userid.startsWith("STCH")) {
-				query = "select staff_id from staff_master where is_deleted = ? and is_approved<2 order by created_on desc";
-				ps = con.prepareStatement(query);
-				ps.setString(1, "0");
-			} else if (userid.startsWith("ST")) {
-				query = "select staff_id from staff_master where is_deleted = ? and created_by=?  and is_approved<2 order by created_on desc";
-				ps = con.prepareStatement(query);
-				ps.setString(1, "0");
-				ps.setString(2, userid);
-			}
-
-			rs = ps.executeQuery();
-			report = new JSONArray();
-			while (rs.next()) {
-				jo = new JSONObject();
-				jo.put("Address", getStaffAddress(rs.getString("staff_id")));
-				jo.put("Staff", getStaff(rs.getString("staff_id")));
-				report = report.put(jo);
-			}
-
-		} catch (Exception e) {
-
-			log.error("DAOManager.java Getting Exception   :::    ", e);
-		}
-
-		finally {
-			DatabaseManager.closeResultSet(rs);
-			DatabaseManager.closePreparedStatement(ps);
-			DatabaseManager.closeConnection(con);
-
-		}
-
-		return report.toString();
-	}
-
-	public String getSingleStaffData(String staffId, String userid) {
-		PreparedStatement ps = null;
-		Connection con = null;
-		ResultSet rs = null;
-		JSONObject jo = null;
-
-		JSONArray report = null;
-		String query = null;
-		try {
-			con = DatabaseManager.getConnection();// new DBConnection().getConnection();
-			// changes for maker and checker //19-06-2019
-			if (userid.equalsIgnoreCase("admin") || userid.startsWith("STCH")) {
-				query = "select staff_id from staff_master where staff_id = ?  and is_approved<2 order by created_on desc";
-				ps = con.prepareStatement(query);
-				ps.setString(1, staffId);
-			} else if (userid.startsWith("ST")) {
-				query = "select staff_id from staff_master where staff_id =  ?  and is_approved<2 order by created_on desc";
-				ps = con.prepareStatement(query);
-				ps.setString(1, staffId);
-				// ps.setString(2,userid);
-			}
-			rs = ps.executeQuery();
-			report = new JSONArray();
-			while (rs.next()) {
-				jo = new JSONObject();
-				jo.put("Address", getStaffAddress(rs.getString("staff_id")));
-				jo.put("Staff", getStaff(rs.getString("staff_id")));
-				report = report.put(jo);
-			}
-
-		} catch (Exception e) {
-			log.error("DAOManager.java Getting Exception   :::    ", e);
-		}
-
-		finally {
-			DatabaseManager.closeResultSet(rs);
-			DatabaseManager.closePreparedStatement(ps);
-			DatabaseManager.closeConnection(con);
-
-		}
-
-		return report.toString();
-	}
 
 	public JSONArray orderList(String po_id) {
 		PreparedStatement ps = null;
@@ -1162,12 +898,10 @@ public class DAOManager {
 
 			log.error("DAOManager.java Getting Exception   :::    ", e);
 		}
-
 		finally {
 			DatabaseManager.closeResultSet(rs);
 			DatabaseManager.closePreparedStatement(ps);
 			DatabaseManager.closeConnection(con);
-
 		}
 
 		return jo.toString();
@@ -1205,12 +939,10 @@ public class DAOManager {
 
 			log.error("DAOManager.java Getting Exception   :::    ", e);
 		}
-
 		finally {
 			DatabaseManager.closeResultSet(rs);
 			DatabaseManager.closePreparedStatement(ps);
 			DatabaseManager.closeConnection(con);
-
 		}
 
 		return report;
@@ -1240,84 +972,21 @@ public class DAOManager {
 				jo.put("totalordervalue", rs.getString("total_order_value"));
 
 				report.put(jo);
-
-				// log.info(report);
 			}
 
 		} catch (Exception e) {
 
 			log.error("DAOManager.java Getting Exception   :::    ", e);
 		}
-
 		finally {
 			DatabaseManager.closeResultSet(rs);
 			DatabaseManager.closePreparedStatement(ps);
 			DatabaseManager.closeConnection(con);
 
 		}
-
 		return report;
 	}
-	/*
-	 * public String orderFullfillmentView(){ PreparedStatement ps = null;
-	 * Connection con =null; ResultSet rs = null; JSONObject jo = null;
-	 * 
-	 * // JSONArray report = null; String query = null; try { con =
-	 * DatabaseManager.getConnection();//new DBConnection().getConnection();
-	 * 
-	 * query ="select po_id from viewpomaster"; log.info(" query  "+query); ps =
-	 * con.prepareStatement(query);
-	 * 
-	 * rs = ps.executeQuery(); // report = new JSONArray(); while (rs.next()) { jo =
-	 * new JSONObject();
-	 * 
-	 * jo.put("orderfullfillmentview", orderListView(rs.getString("po_id")));
-	 * log.info("please work1" + jo.put("orderfullfillmentview",
-	 * orderListView(rs.getString("po_id"))));
-	 * 
-	 * // report.put(jo);
-	 * 
-	 * }
-	 * 
-	 * } catch (Exception e) {
-	 * 
-	 * log.error("DAOManager.java getting Error   :::    ",e); }
-	 * 
-	 * finally{ DatabaseManager.closeResultSet(rs);
-	 * DatabaseManager.closePreparedStatement(ps);
-	 * DatabaseManager.closeConnection(con);
-	 * 
-	 * }
-	 * 
-	 * return jo.toString(); }
-	 */
-
-	/*
-	 * public String singleOrderFullfillmentView(String po_id){ log.info("hello");
-	 * PreparedStatement ps = null; Connection con =null; ResultSet rs = null;
-	 * JSONObject jo = null; String query = null; try { con =
-	 * DatabaseManager.getConnection();//new DBConnection().getConnection(); query
-	 * ="select * from viewpomaster where po_id=?"; ps =
-	 * con.prepareStatement(query); ps.setString(1,po_id);
-	 * 
-	 * rs = ps.executeQuery(); while (rs.next()) { jo = new JSONObject();
-	 * jo.put("orderfullfillmentview", singleOrderListView(rs.getString("po_id")));
-	 * }
-	 * 
-	 * } catch (Exception e) {
-	 * 
-	 * log.error("DAOManager.java Getting Exception   :::    ",e); }
-	 * 
-	 * 
-	 * finally{ DatabaseManager.closeResultSet(rs);
-	 * DatabaseManager.closePreparedStatement(ps);
-	 * DatabaseManager.closeConnection(con);
-	 * 
-	 * }
-	 * 
-	 * return jo.toString(); }
-	 */
-
+	
 	public boolean poUnAuthorize(String po_id) {
 		boolean approve = false;
 
@@ -1348,7 +1017,6 @@ public class DAOManager {
 
 	public boolean poAuthorize(String po_id, String userId, Connection conn) {
 		boolean approve = false;
-
 		PreparedStatement preparedStmt = null;
 		ResultSet rs = null;
 
@@ -1372,7 +1040,6 @@ public class DAOManager {
 
 	public boolean POReject(String po_id, String userId) {
 		boolean approve = false;
-
 		Connection con = null;
 		PreparedStatement preparedStmt = null;
 		ResultSet rs = null;
@@ -1398,91 +1065,8 @@ public class DAOManager {
 
 		return approve;
 	}
-
-	public boolean editSalesAgent(String agentId, String branchId, String agentName, String emailId,
-			String contactNumber, String isActive, String resiAddr1, String resiAddr2, String resiPin, String resiCity,
-			String resiState, String businessAddr1, String businessAddr2, String businessPin, String businessCity,
-			String businessState, String accountNo, String bankName, String branchAddress, String ifscCode,
-			String accountType, String isModifiedby) {
-		boolean isadded = false;
-
-		Connection con = null;
-		PreparedStatement preparedStmt = null;
-		PreparedStatement preparedStmt1 = null;
-		PreparedStatement preparedStmt2 = null;
-
-		String sql = "update sales_agent_master set agent_id=?, branch_id=?, agent_name=?, email_id=?, contact_number=?, is_active=?, created_by=?, created_on=?, approved_by=?, approved_on=? ,isModifiedby=? where agent_id='"
-				+ agentId + "'";
-
-		String sql1 = "update address_master  set user_id=?, resi_add1=?, resi_address2=?, resi_pin=?, resi_city=?, resi_state=?, business_add1=?, business_add2=?, business_pin=?, business_city=?, business_state=? where user_id='"
-				+ agentId + "'";
-
-		String sql2 = "update account_master  set user_id=?, acc_no=?, bank_name=?, branch_address=?, ifsc_code=?, account_type=?, created_on=?, is_active=? where user_id='"
-				+ agentId + "'";
-
-		try {
-			con = DatabaseManager.getConnection();// new DBConnection().getConnection();
-			con.setAutoCommit(false);
-			preparedStmt = con.prepareStatement(sql);// for sales agent master
-			preparedStmt.setString(1, agentId);
-			preparedStmt.setString(2, branchId);
-			preparedStmt.setString(3, agentName);
-			preparedStmt.setString(4, emailId);
-			preparedStmt.setString(5, contactNumber);
-			preparedStmt.setString(6, isActive);
-			preparedStmt.setString(7, "sud");
-			preparedStmt.setString(8, "2018-03-21");
-			preparedStmt.setString(9, "xyz");
-			preparedStmt.setString(10, "2018-03-21");
-			preparedStmt.setString(11, isModifiedby);
-			preparedStmt.executeUpdate();
-
-			preparedStmt1 = con.prepareStatement(sql1);// for address master
-			preparedStmt1.setString(1, agentId);
-			preparedStmt1.setString(2, resiAddr1);
-			preparedStmt1.setString(3, resiAddr2);
-			preparedStmt1.setString(4, resiPin);
-			preparedStmt1.setString(5, resiCity);
-			preparedStmt1.setString(6, resiState);
-			preparedStmt1.setString(7, businessAddr1);
-			preparedStmt1.setString(8, businessAddr2);
-			preparedStmt1.setString(9, businessPin);
-			preparedStmt1.setString(10, businessCity);
-			preparedStmt1.setString(11, businessState);
-
-			preparedStmt1.executeUpdate();
-
-			preparedStmt2 = con.prepareStatement(sql2);// for account master
-			preparedStmt2.setString(1, agentId);
-			preparedStmt2.setString(2, accountNo);
-			preparedStmt2.setString(3, bankName);
-			preparedStmt2.setString(4, branchAddress);
-			preparedStmt2.setString(5, ifscCode);
-			preparedStmt2.setString(6, accountType);
-			preparedStmt2.setString(7, "2018-03-21");
-			preparedStmt2.setString(8, "0");
-
-			preparedStmt2.executeUpdate();
-
-			con.commit();
-			isadded = true;
-			log.info("Successfully sales agent added.........");
-		} catch (Exception e) {
-			log.info("Something wrong while insert..." + e);
-			log.error("DAOManager.java Getting Exception   :::    ", e);
-		} finally {
-			// DatabaseConnectionManager.closeResultSet(rs);
-			DatabaseManager.closePreparedStatement(preparedStmt2);
-			DatabaseManager.closePreparedStatement(preparedStmt1);
-			DatabaseManager.closePreparedStatement(preparedStmt);
-			DatabaseManager.closeConnection(con);
-
-		}
-		return isadded;
-	}
-
+	
 	public static String getLeftPaddedString(String sInputData, String padd, int iLength)
-
 	{
 		if (sInputData.length() > iLength) {
 			sInputData = sInputData.substring(0, iLength);
@@ -1508,8 +1092,8 @@ public class DAOManager {
 		PreparedStatement preparedStmt2 = null;
 
 		ResultSet rs = null;
-		String sql = "insert into supplier_master (supplier_id, supplier_name, email_id, contact_person, contact_number1, contact_number2, web_site, delivery_period, max_order_qty,min_order_qty,is_npci_certified,npci_certification_expiry,gstn,created_by,created_on,approved_by,approved_on,status,is_deleted,is_approved, remark)"
-				+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "insert into supplier_master (supplier_id, supplier_name, email_id, contact_person, contact_number1, contact_number2, web_site, delivery_period, max_order_qty,min_order_qty,is_npci_certified,npci_certification_expiry,gstn,created_by,created_on,approved_by,approved_on,status, remark)"
+				+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		String sql1 = "insert into address_info  (user_id, resi_address1, resi_address2, resi_pin, resi_city, resi_state, business_add1, business_add2, business_pin, business_city, business_state)"
 				+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		String sql2 = "insert into account_info  (user_id, account_number, bank_name, branch_address, ifsc_code, account_type, created_on, status)"
@@ -1539,9 +1123,7 @@ public class DAOManager {
 			preparedStmt.setTimestamp(17, new Timestamp(System.currentTimeMillis()));
 
 			preparedStmt.setString(18, WINConstants.NEW);
-			preparedStmt.setString(19, "0");
-			preparedStmt.setString(20, "0");
-			preparedStmt.setString(21, WINConstants.NEWREQ);
+			preparedStmt.setString(19, WINConstants.NEWREQ);
 
 			preparedStmt.executeUpdate();
 

@@ -113,8 +113,8 @@ public class BranchService {
 		return hm;
 	}
 
-	public ResponseDTO getBranchListForMaker(Connection conn) {
-		List<BranchDTO> data = branchDAO.getBranchListForMaker(conn);
+	public ResponseDTO getBranchListForMaker(Connection conn, String userId) {
+		List<BranchDTO> data = branchDAO.getBranchListForMaker(conn, userId);
 		responseDTO.setData(data);
 		responseDTO.setStatus(ResponseDTO.success);
 		return responseDTO;

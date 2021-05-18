@@ -91,7 +91,7 @@ public class BranchMakerManagement extends HttpServlet {
 				responseDTO = branchService.getBranchById(branchId, request.getHeader("userId"), conn);
 			}
 			else if (("getBranchList").equalsIgnoreCase(requestType)) {
-				responseDTO = branchService.getBranchListForMaker(conn);
+				responseDTO = branchService.getBranchListForMaker(conn, request.getHeader("userId"));
 			}  
 			else {
 				log.info("Invalid Request Type");

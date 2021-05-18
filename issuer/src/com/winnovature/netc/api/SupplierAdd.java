@@ -31,7 +31,6 @@ public class SupplierAdd extends HttpServlet {
 
 	public SupplierAdd() {
 		super();
-
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -184,18 +183,14 @@ public class SupplierAdd extends HttpServlet {
 				jresp.put("status", "0");
 			}
 
-			/*
-			 * } else { jresp.put("flag", "0"); }
-			 */
 			out.write(jresp.toString());
 		}
 
 		catch (Exception e) {
 			log.error("SupplierAdd.java :: Getting Exception   :::    " + e.getMessage());
-			jresp.put("message",
-					"Error code 1440 :  Getting error while process request.  Sorry, Can't add supplier...");
+			jresp.put("message", "Error code 1440 :  Getting error while process request.  Sorry, Can't add supplier...");
 			jresp.put("status", "0");
-			log.error("Getting Exception   :::    ", e);
+			log.error("Getting Exception   :::    "+ e);
 			out.write(jresp.toString());
 		}
 

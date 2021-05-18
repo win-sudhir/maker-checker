@@ -90,9 +90,7 @@ public class SupplierApprove extends HttpServlet {
 				jresp.put("message", "Sorry, Can't Approve Supplier...!!!");
 			}
 
-			/*
-			 * }else{ jresp.put("flag","0"); }
-			 */
+			
 			out.write(jresp.toString());
 			log.info(jresp.toString());
 		} catch (Exception e) {

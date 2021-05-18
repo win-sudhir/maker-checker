@@ -116,16 +116,24 @@ public class BranchDAO {
 		return "0";
 	}
 
-	public List<BranchDTO> getBranchListForMaker(Connection conn) {
+	public List<BranchDTO> getBranchListForMaker(Connection conn, String userId) {
 
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		List<BranchDTO> lst = new ArrayList<BranchDTO>();
 		String query = null;
 		try {
-			query = "select * from branch_info WHERE status in ('ACTIVE','APPROVE') order by created_on desc";
-
-			ps = conn.prepareStatement(query);
+			String roleId = UserDAO.getRoleIdByUser(userId, conn);
+			if (roleId.equals(WINConstants.SUPERADMIN) || roleId.equals(WINConstants.ADMIN) || roleId.equals(WINConstants.BRANCHCHECKER)) {
+				query = "select * from branch_info order by created_on desc";//WHERE status in ('ACTIVE','APPROVE')
+				ps = conn.prepareStatement(query);
+			}
+			else {
+				query = "select * from branch_info WHERE created_by=? order by created_on desc";//WHERE status in ('ACTIVE','APPROVE')
+				ps = conn.prepareStatement(query);
+				ps.setString(1, userId);
+			}
+			//ps = conn.prepareStatement(query);
 			rs = ps.executeQuery();
 			BranchDTO branchDTO = null;
 
@@ -133,9 +141,11 @@ public class BranchDAO {
 
 				branchDTO = new BranchDTO();
 				branchDTO.setBranchId(rs.getString("branch_id"));
+				branchDTO.setBankBranchId(rs.getString("bank_branch_id"));
 				branchDTO.setBranchName(rs.getString("branch_name"));
 				branchDTO.setContactNumber(rs.getString("contact_number"));
 				branchDTO.setEmailId(rs.getString("email_id"));
+				branchDTO.setRemark(rs.getString("remark"));
 
 				lst.add(branchDTO);
 			}

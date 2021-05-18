@@ -262,10 +262,10 @@ public class CustomerDAO {
 			
 			String roleId = UserDAO.getRoleIdByUser(userId, conn);
 			if (roleId.equals(WINConstants.SUPERADMIN) || roleId.equals(WINConstants.ADMIN) || roleId.equals(WINConstants.BRANCHCHECKER)) {
-				query = "SELECT * FROM customer_info";// WHERE status in ('NEW', 'ACTIVE', 'APPROVE')";
+				query = "SELECT * FROM customer_info order by created_on desc";// WHERE status in ('NEW', 'ACTIVE', 'APPROVE')";
 				ps = conn.prepareStatement(query);
 			}else {
-				query = "SELECT * FROM customer_info WHERE parent_id = ?";// and status in ('NEW', 'ACTIVE', 'APPROVE')";
+				query = "SELECT * FROM customer_info WHERE parent_id = ? order by created_on desc";// and status in ('NEW', 'ACTIVE', 'APPROVE')";
 				ps = conn.prepareStatement(query);
 				ps.setString(1, userId);
 			}

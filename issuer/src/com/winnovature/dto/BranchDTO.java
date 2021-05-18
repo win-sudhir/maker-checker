@@ -13,6 +13,7 @@ public class BranchDTO {
 	private String pin;
 	private String reason;
 	private String action;
+	private String remark;
 
 	public String getBranchId() {
 		return branchId;
@@ -108,6 +109,16 @@ public class BranchDTO {
 
 	public void setAction(String action) {
 		this.action = action;
+	}
+	
+	
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
 	}
 
 	@Override
