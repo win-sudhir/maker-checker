@@ -1,5 +1,6 @@
 package com.winnovature.dao;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,7 +24,7 @@ public class BranchDAO {
 		String currentDate = new DateUtils().getCurrnetDate();
 		try {
 
-			String query = "INSERT INTO branch_info (branch_id, bank_branch_id, branch_name, email_id, contact_number, status, action_status, created_by, created_on) "
+			String query = "INSERT INTO branch_info (branch_id, bank_branch_id, branch_name, email_id, contact_number, status, created_by, created_on, remark) "
 					+ "VALUES (?,?,?,?,?,?,?,?,?) ";
 
 			ps = conn.prepareStatement(query);
@@ -33,9 +34,9 @@ public class BranchDAO {
 			ps.setString(4, branchDTO.getEmailId());
 			ps.setString(5, branchDTO.getContactNumber());
 			ps.setString(6, WINConstants.NEW);
-			ps.setString(7, WINConstants.NEW);
-			ps.setString(8, userId);
-			ps.setString(9, currentDate);
+			ps.setString(7, userId);
+			ps.setString(8, currentDate);
+			ps.setString(9, WINConstants.NEWREQ);
 
 			if (ps.executeUpdate() > 0) {
 				return "1";
@@ -199,15 +200,14 @@ public class BranchDAO {
 
 		try {
 
-			String query = "UPDATE branch_info SET status=?, approved_by=?, approved_on=?, is_approved=?, is_deleted=? WHERE branch_id = ? ";
+			String query = "UPDATE branch_info SET status=?, last_updated_by=?, last_updated_on=?, remark=? WHERE branch_id = ? ";
 			String currentDate = new DateUtils().getCurrnetDate();
 			ps = conn.prepareStatement(query);
 			ps.setString(1, WINConstants.DELETE);
 			ps.setString(2, userId);
 			ps.setString(3, currentDate);
-			ps.setString(4, "1");
-			ps.setString(5, "1");
-			ps.setString(6, branchId);
+			ps.setString(4, WINConstants.DELAPP);
+			ps.setString(5, branchId);
 
 			ps.executeUpdate();
 
@@ -224,18 +224,16 @@ public class BranchDAO {
 
 		try {
 
-			String query = "UPDATE branch_info SET status=?, approved_by=?, approved_on=?, is_approved=?, action_status =? WHERE branch_id = ? ";
+			String query = "UPDATE branch_info SET status=?, approved_by=?, approved_on=?, remark =? WHERE branch_id = ? ";
 			String currentDate = new DateUtils().getCurrnetDate();
 			ps = conn.prepareStatement(query);
 			ps.setString(1, WINConstants.ACTIVE);
 			ps.setString(2, userId);
 			ps.setString(3, currentDate);
-			ps.setString(4, "1");
-			ps.setString(5, WINConstants.ACTIVE);
-			ps.setString(6, branchId);
-
+			ps.setString(4, WINConstants.NEWAPP);
+			ps.setString(5, branchId);
 			if (ps.executeUpdate() > 0) {
-				log.info("Agent Approve Successfully.");
+				log.info("Branch Approved Successfully.");
 				return "1";
 			} else {
 				return "0";
@@ -249,20 +247,19 @@ public class BranchDAO {
 		return "0";
 	}
 
-	public void rejectBranch(Connection conn, String userId, String branchId) {
+	public void rejectBranch(Connection conn, String userId, String branchId, String remark) {
 		PreparedStatement ps = null;
 
 		try {
 
-			String query = "UPDATE branch_info SET status=?, approved_by=?, approved_on=?, is_approved=?, action_status =? WHERE branch_id = ? ";
+			String query = "UPDATE branch_info SET status=?, last_updated_by=?, last_updated_on=?, remark =? WHERE branch_id = ? ";
 			String currentDate = new DateUtils().getCurrnetDate();
 			ps = conn.prepareStatement(query);
 			ps.setString(1, WINConstants.REJECT);
 			ps.setString(2, userId);
 			ps.setString(3, currentDate);
-			ps.setString(4, "1");
-			ps.setString(5, WINConstants.REJECT);
-			ps.setString(6, branchId);
+			ps.setString(4, remark);//WINConstants.REJECT);
+			ps.setString(5, branchId);
 
 			ps.executeUpdate();
 
@@ -279,13 +276,14 @@ public class BranchDAO {
 
 		try {
 
-			String query = "UPDATE branch_info SET action_status =?, approved_by=?, approved_on=? WHERE branch_id = ? ";
+			String query = "UPDATE branch_info SET status =?, last_updated_by=?, last_updated_on=?, remark=? WHERE branch_id = ? ";
 			String currentDate = new DateUtils().getCurrnetDate();
 			ps = conn.prepareStatement(query);
-			ps.setString(1, WINConstants.DELETE);
+			ps.setString(1, WINConstants.DELPENDING);
 			ps.setString(2, userId);
 			ps.setString(3, currentDate);
-			ps.setString(4, branchId);
+			ps.setString(4, WINConstants.DELREQ);
+			ps.setString(5, branchId);
 
 			ps.executeUpdate();
 
@@ -395,7 +393,7 @@ public class BranchDAO {
 		PreparedStatement ps = null;
 		BranchDTO branchDTO = new BranchDTO();
 		try {
-			String query = "SELECT * FROM branch_info WHERE branch_id=?";
+			String query = "SELECT * FROM branch_info b, address_info a WHERE b.branch_id=a.user_id AND b.branch_id=?";
 			ps = conn.prepareStatement(query);
 			ps.setString(1, branchId);
 			rs = ps.executeQuery();
@@ -408,6 +406,11 @@ public class BranchDAO {
 				branchDTO.setEmailId(rs.getString("email_id"));
 				branchDTO.setContactNumber(rs.getString("contact_number"));
 				
+				branchDTO.setAddress1(rs.getString("resi_address1"));
+				branchDTO.setAddress2(rs.getString("resi_address2"));
+				branchDTO.setCity(rs.getString("resi_city"));
+				branchDTO.setState(rs.getString("resi_state"));
+				branchDTO.setPin(rs.getString("resi_pin"));;
 			}
 			return branchDTO;
 		}
@@ -426,7 +429,7 @@ public class BranchDAO {
 		String currentDate = new DateUtils().getCurrnetDate();
 		PreparedStatement ps = null;
 		//branch_id, bank_branch_id, branch_name, email_id, contact_number, is_active, status, created_by, created_on, approved_by, approved_on, is_approved, is_deleted, rodt, isModifiedby, act_deact_status, act_date, dact_date, last_updated_by, delete_status, action_status
-		String sql = "UPDATE branch_info SET bank_branch_id=?, branch_name=?, email_id=?, contact_number=?, last_updated_by=?, act_date= ? WHERE branch_id = ?";
+		String sql = "UPDATE branch__info SET bank_branch_id=?, branch_name=?, email_id=?, contact_number=?, last_updated_by=?, act_date= ? WHERE branch_id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, branchDTO.getBankBranchId());
@@ -451,6 +454,81 @@ public class BranchDAO {
 			DatabaseManager.closePreparedStatement(ps);
 		}
 		return "0";
+	}
+
+	public static String approveEditedBranch(String branchId, String type, String userId, Connection conn) {
+		CallableStatement cs = null;
+		try {
+
+			String sql = "{CALL pr_update_branch(?,?,?,?)}";
+			cs = conn.prepareCall(sql);
+			cs.setString(1, branchId);
+			cs.setString(2, type);
+			cs.setString(3, userId);
+			cs.registerOutParameter(4, java.sql.Types.VARCHAR);
+			cs.execute();
+			return cs.getString(4);
+		} catch (Exception e) {
+			log.error("approveEditedBranch() Getting Exception   :::    "+ e.getMessage());
+		} finally {
+			DatabaseManager.closeCallableStatement(cs);
+		}
+		return null;
+	}
+
+	public static String addEditedBranch(BranchDTO branchDTO, String userId, Connection conn) {
+		PreparedStatement ps = null;
+		try {
+
+			String query = "INSERT INTO branch_edited_info (branch_id, bank_branch_id, branch_name, email_id, contact_number) "
+					+ "VALUES (?,?,?,?,?) ";
+
+			ps = conn.prepareStatement(query);
+			ps.setString(1, branchDTO.getBranchId());
+			ps.setString(2, branchDTO.getBankBranchId());
+			ps.setString(3, branchDTO.getBranchName());
+			ps.setString(4, branchDTO.getEmailId());
+			ps.setString(5, branchDTO.getContactNumber());
+
+			if (ps.executeUpdate() > 0) {
+				return "1";
+			} else {
+				return "0";
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DatabaseManager.closePreparedStatement(ps);
+		}
+		return "0";
+	}
+
+	public static String updateBranchStatus(BranchDTO branchDTO, String userId, Connection conn) {
+		String currentDate = new DateUtils().getCurrnetDate();
+		PreparedStatement ps = null;
+		String sql = "UPDATE branch_info set status=?, last_updated_by=?, last_updated_on= ?, remark=? where branch_id = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, WINConstants.UPPENDING);
+			ps.setString(2, userId);
+			ps.setString(3, currentDate);
+			ps.setString(4, WINConstants.UPREQ);
+			ps.setString(5, branchDTO.getBranchId());
+			if (ps.executeUpdate() > 0) {
+				log.info("branch status updated successfully.");
+				return "1";
+			} else {
+				return "0";
+			}
+
+		} catch (Exception e) {
+			log.info(("Exception in updateAgent() :: " + e.getMessage()));
+			e.printStackTrace();
+		} finally {
+			DatabaseManager.closePreparedStatement(ps);
+		}
+		return "0";
+		
 	}
 
 }

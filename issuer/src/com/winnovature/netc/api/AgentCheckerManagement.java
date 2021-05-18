@@ -16,8 +16,6 @@ import org.json.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.winnovature.dao.CheckSession;
-import com.winnovature.dto.AccountDTO;
-import com.winnovature.dto.AddressDTO;
 import com.winnovature.dto.AgentDTO;
 import com.winnovature.dto.ResponseDTO;
 import com.winnovature.service.AgentService;
@@ -62,7 +60,7 @@ public class AgentCheckerManagement extends HttpServlet {
 			log.info("jsonRequest " + jsonRequest);
 			AgentDTO agentDTO = new AgentDTO();
 			String requestType = jsonRequest.getString("requestType");
-			log.info("UserManagement requestType " + requestType);
+			log.info("AgentCheckerManagement requestType " + requestType);
 			/*
 			if (("updateAgent").equalsIgnoreCase(requestType)) {
 				JSONObject agentInfo = jsonRequest.getJSONObject("agentInfo");
@@ -81,6 +79,7 @@ public class AgentCheckerManagement extends HttpServlet {
 				agentDTO = new Gson().fromJson(jsonRequest.toString(), AgentDTO.class);
 				responseDTO = agentService.approveAgent(agentDTO, request.getHeader("userId"), conn);
 			} else if (("rejectAgent").equalsIgnoreCase(requestType)) {
+				///String remark = jsonRequest.getString("remark");
 				agentDTO = new Gson().fromJson(jsonRequest.toString(), AgentDTO.class);
 				responseDTO = agentService.rejectAgent(agentDTO, request.getHeader("userId"), conn);
 			} else if (("deleteAgent").equalsIgnoreCase(requestType)) {

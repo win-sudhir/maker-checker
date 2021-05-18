@@ -12,6 +12,7 @@ import com.winnovature.constants.WINConstants;
 import com.winnovature.dao.AccountDAO;
 import com.winnovature.dao.AddressDAO;
 import com.winnovature.dao.BranchDAO;
+import com.winnovature.dao.DifferenceDAO;
 import com.winnovature.dto.AccountDTO;
 import com.winnovature.dto.AddressDTO;
 import com.winnovature.dto.BranchAccountDTO;
@@ -75,8 +76,8 @@ public class BranchService {
 		auditTrail.addAuditData(conn, userId, branchDTO.getBranchId(), "ADDBRANCH", "ADDBRANCHSUCCESS", hm, ipAddress);
 		
 		responseDTO.setStatus(ResponseDTO.success);
-		responseDTO.setMessage(BranchErrorCode.WINNABU0011.getErrorMessage());
-		responseDTO.setErrorCode(BranchErrorCode.WINNABU0011.name());
+		responseDTO.setMessage(BranchErrorCode.WINNBBU0011.getErrorMessage());
+		responseDTO.setErrorCode(BranchErrorCode.WINNBBU0011.name());
 		return responseDTO;
 
 	}
@@ -140,8 +141,8 @@ public class BranchService {
 		auditTrail.addAuditData(conn, userId, branchId, "DELETE-BRANCH", "DELETE-BRANCH-SUCCESS", hm, ipAddress);
 		
 		responseDTO.setStatus(ResponseDTO.success);
-		responseDTO.setMessage("Branch deleted successfully.");
-		responseDTO.setErrorCode("WINCUBU0003");
+		responseDTO.setMessage(BranchErrorCode.WINNBBU006.getErrorMessage());
+		responseDTO.setErrorCode(BranchErrorCode.WINNBBU006.name());
 		return responseDTO;
 	}
 
@@ -151,8 +152,8 @@ public class BranchService {
 		
 		
 		responseDTO.setStatus(ResponseDTO.success);
-		responseDTO.setMessage(BranchErrorCode.WINNABU0015.getErrorMessage());
-		responseDTO.setErrorCode(BranchErrorCode.WINNABU0015.name());
+		responseDTO.setMessage(BranchErrorCode.WINNBBU0015.getErrorMessage());
+		responseDTO.setErrorCode(BranchErrorCode.WINNBBU0015.name());
 		return responseDTO;
 	}
 
@@ -191,14 +192,14 @@ public class BranchService {
 		auditTrail.addAuditData(conn, userId, branchId, "APPROVE-BRANCH", "APPROVE-BRANCH-SUCCESS", hm, ipAddress);
 		
 		responseDTO.setStatus(ResponseDTO.success);
-		responseDTO.setMessage("Branch approved successfully.");
-		responseDTO.setErrorCode("WINCUBU0003");
+		responseDTO.setMessage(BranchErrorCode.WINNBBU0016.getErrorMessage());
+		responseDTO.setErrorCode(BranchErrorCode.WINNBBU0016.name());
 		return responseDTO;
 	}
 
-	public ResponseDTO rejectBranch(Connection conn, String branchId, String userId, String ipAddress) {
+	public ResponseDTO rejectBranch(Connection conn, String branchId, String userId, String ipAddress, String remark) {
 		ResponseDTO responseDTO = new ResponseDTO();
-		branchDAO.rejectBranch(conn, userId, branchId);
+		branchDAO.rejectBranch(conn, userId, branchId, remark);
 		
 		Map<String, String> hm = new HashMap<String, String>();
 		hm.put("branchId", branchId);
@@ -210,8 +211,8 @@ public class BranchService {
 		auditTrail.addAuditData(conn, userId, branchId, "REJECT-BRANCH", "REJECT-BRANCH-SUCCESS", hm, ipAddress);
 		
 		responseDTO.setStatus(ResponseDTO.success);
-		responseDTO.setMessage("Branch rejectd successfully.");
-		responseDTO.setErrorCode("WINCUBU0003");
+		responseDTO.setMessage(BranchErrorCode.WINNBBU007.getErrorMessage());
+		responseDTO.setErrorCode(BranchErrorCode.WINNBBU007.name());
 		return responseDTO;
 	}
 
@@ -221,11 +222,11 @@ public class BranchService {
 
 	public ResponseDTO getBranchById(String branchId, String header, Connection conn) {
 		BranchDTO branch = BranchDAO.getBranchById(branchId, conn);
-		AddressDTO addressDTO=new AddressDAO().getAddressById(conn, branchId);
+		//AddressDTO addressDTO=new AddressDAO().getAddressById(conn, branchId);
 		AccountDTO accountDTO=new AccountDAO().getAccountById(conn, branchId);
 		//ResponseDTO responseDTO = new ResponseDTO();
 		responseDTO.setBranch(branch);
-		responseDTO.setAddress(addressDTO);
+		//responseDTO.setAddress(addressDTO);
 		responseDTO.setAccount(accountDTO);
 		responseDTO.setStatus(ResponseDTO.success);
 		return responseDTO;
@@ -233,22 +234,66 @@ public class BranchService {
 	
 	public ResponseDTO updateBranch(BranchDTO branchDTO, AddressDTO addressDTO, AccountDTO accountDTO, String userId,
 			Connection conn) {
-		String response = BranchDAO.updateBranch(branchDTO, userId, conn);
+		//String response = BranchDAO.updateBranch(branchDTO, userId, conn);
+		String response = BranchDAO.addEditedBranch(branchDTO, userId, conn);
 		if(response.equals("0")){
 			responseDTO.setStatus(ResponseDTO.failure);
 			responseDTO.setMessage("Branch can not update, please try later.");
 			responseDTO.setErrorCode("WINBUBU009");
 			return responseDTO;
 		}
+		
+		addressDTO.setResiAddress1(branchDTO.getAddress1());
+		addressDTO.setResiAddress2(branchDTO.getAddress2());
+		addressDTO.setResiPin(branchDTO.getPin());
+		addressDTO.setResiCity(branchDTO.getCity());
+		addressDTO.setResiState(branchDTO.getState());
+		
+		addressDTO.setBusinessAdd1(branchDTO.getAddress1());
+		addressDTO.setBusinessAdd2(branchDTO.getAddress2());
+		addressDTO.setBusinessPin(branchDTO.getPin());
+		addressDTO.setBusinessCity(branchDTO.getCity());
+		addressDTO.setBusinessState(branchDTO.getState());
+				
+		
 		addressDTO.setUserId(branchDTO.getBranchId());
 		accountDTO.setUserId(branchDTO.getBranchId());
-		AddressDAO.updateAddress(conn, addressDTO, userId);
-		AccountDAO.updateAccount(conn, accountDTO, userId);
+		AddressDAO.addEditedAddress(conn, addressDTO, userId);
+		AccountDAO.addEditedAccount(conn, accountDTO, userId);
+		
+		BranchDAO.updateBranchStatus(branchDTO, userId, conn);
 		responseDTO.setStatus(ResponseDTO.success);
-		responseDTO.setMessage("Branch updated successfully.");
-		responseDTO.setErrorCode("WINBUBU010");
+		responseDTO.setMessage(BranchErrorCode.WINNBBU0012.getErrorMessage());
+		responseDTO.setErrorCode(BranchErrorCode.WINNBBU0012.name());
 		return responseDTO;
 	}
+
+	public ResponseDTO approveEditedBranch(String branchId, String type, String userId, Connection conn) {
+		String result = BranchDAO.approveEditedBranch(branchId, type, userId, conn);
+		if(result.equals("1")){
+			responseDTO.setStatus(ResponseDTO.success);
+			responseDTO.setMessage(BranchErrorCode.WINNBBU0017.getErrorMessage());
+			responseDTO.setErrorCode(BranchErrorCode.WINNBBU0017.name());
+			return responseDTO;
+		}
+		else if(result.equals("2")) {
+			responseDTO.setStatus(ResponseDTO.success);
+			responseDTO.setMessage(BranchErrorCode.WINNBBU007.getErrorMessage());
+			responseDTO.setErrorCode(BranchErrorCode.WINNBBU007.name());
+			return responseDTO;
+		}
+		responseDTO.setStatus(ResponseDTO.failure);
+		responseDTO.setMessage(BranchErrorCode.WINNABU005.getErrorMessage());
+		responseDTO.setErrorCode(BranchErrorCode.WINNABU005.name());
+		return responseDTO;
+	}
+
+	public String viewEditedDifference(String branchId, String userId, Connection conn) {
+		return DifferenceDAO.getBranchEditedDifference(branchId, conn);
+		//return null;
+	}
+
+	
 	
 	
 }

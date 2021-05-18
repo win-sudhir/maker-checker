@@ -16,9 +16,6 @@ import org.json.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.winnovature.dao.CheckSession;
-import com.winnovature.dto.AccountDTO;
-import com.winnovature.dto.AddressDTO;
-import com.winnovature.dto.BranchDTO;
 import com.winnovature.dto.ResponseDTO;
 import com.winnovature.service.BranchService;
 import com.winnovature.utils.DatabaseManager;
@@ -48,8 +45,7 @@ public class BranchCheckerManagement extends HttpServlet {
 
 			conn = DatabaseManager.getAutoCommitConnection();
 
-			boolean checkSession = CheckSession.isValidSession(request.getHeader("userId"),
-					request.getHeader("Authorization"), conn);
+			boolean checkSession = CheckSession.isValidSession(request.getHeader("userId"), request.getHeader("Authorization"), conn);
 
 			if (!checkSession) {
 				response.setStatus(403);
@@ -66,34 +62,29 @@ public class BranchCheckerManagement extends HttpServlet {
 			String requestType = jsonRequest.getString("requestType");
 			log.info("UserManagement requestType " + requestType);
 			
-			if (("updateBranch").equalsIgnoreCase(requestType)) {
-				JSONObject branchInfo = jsonRequest.getJSONObject("branchInfo");
-				JSONObject address = jsonRequest.getJSONObject("address");
-				JSONObject account = jsonRequest.getJSONObject("account");
-				AddressDTO addressDTO = new Gson().fromJson(address.toString(), AddressDTO.class);
-				AccountDTO accountDTO = new Gson().fromJson(account.toString(), AccountDTO.class);
-				BranchDTO branchDTO = new Gson().fromJson(branchInfo.toString(), BranchDTO.class);
-				branchDTO.setBranchId(jsonRequest.getString("branchId"));
-				responseDTO = branchService.updateBranch(branchDTO, addressDTO, accountDTO, request.getHeader("userId"),
-						conn);
-			}
-			
+			if (requestType.equalsIgnoreCase("approveBranch")) {
+				String branchId = jsonRequest.getString("branchId");
+				responseDTO = branchService.approveBranch(conn, branchId, request.getHeader("userId"), ipAddress);
+			} 
+			else if (requestType.equalsIgnoreCase("rejectBranch")) {
+				String branchId = jsonRequest.getString("branchId");
+				String remark = jsonRequest.getString("remark");
+				responseDTO = branchService.rejectBranch(conn, branchId, request.getHeader("userId"), ipAddress, remark);
+			}/* 
 			else if (("getBranchById").equalsIgnoreCase(requestType)) {
 				String branchId = jsonRequest.getString("branchId");
 				responseDTO = branchService.getBranchById(branchId, request.getHeader("userId"), conn);
-			}
+			}/*
 			else if (("getBranchList").equalsIgnoreCase(requestType)) {
 				responseDTO = branchService.getBranchListForChecker(conn);
-			} else if (requestType.equalsIgnoreCase("deleteBranch")) {
+			} */
+			else if (requestType.equalsIgnoreCase("deleteBranch")) {
 				String branchId = jsonRequest.getString("branchId");
+				//String type = jsonRequest.getString("type");
 				responseDTO = branchService.deleteBranchChecker(conn, branchId, request.getHeader("userId"), ipAddress);
-			} else if (requestType.equalsIgnoreCase("approveBranch")) {
-				String branchId = jsonRequest.getString("branchId");
-				responseDTO = branchService.approveBranch(conn, branchId, request.getHeader("userId"), ipAddress);
-			} else if (requestType.equalsIgnoreCase("rejectBranch")) {
-				String branchId = jsonRequest.getString("branchId");
-				responseDTO = branchService.rejectBranch(conn, branchId, request.getHeader("userId"), ipAddress);
-			} else {
+			} 
+			
+			else {
 				log.info("Invalid Request Type");
 				responseDTO.setErrorCode(BranchErrorCode.WINNABU0029.name());
 				responseDTO.setMessage(BranchErrorCode.WINNABU0029.getErrorMessage());
@@ -101,7 +92,7 @@ public class BranchCheckerManagement extends HttpServlet {
 			}
 
 			finalResponse = gson.toJson(responseDTO);
-			log.info("*****************Response to /agent/manageagent API()****************");
+			log.info("*****************Response to branchc/management API()****************");
 
 		} catch (Exception e) {
 			log.error(e);
